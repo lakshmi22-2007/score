@@ -24,6 +24,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
         .eq('id', id);
 
       if (error) throw error;
+      setDeleting(null);
       onScoreDeleted();
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Failed to delete score');
