@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Trophy, Calendar, User, Gamepad2, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Score } from '../types/score';
@@ -12,8 +12,15 @@ interface ScoreDisplayProps {
 export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [visibleScores, setVisibleScores] = useState<Score[]>(scores);
+
+  useEffect(() => {
+    setVisibleScores(scores);
+  }, [scores]);
 
   const handleDelete = async (id: string) => {
+    const previousScores = visibleScores;
+    setVisibleScores(visibleScores.filter(score => score.id !== id));
     setDeleting(id);
     setDeleteError(null);
 
@@ -28,6 +35,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
       onScoreDeleted();
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Failed to delete score');
+      setVisibleScores(previousScores);
       setDeleting(null);
     }
   };
@@ -78,7 +86,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
       )}
 
       <div className="grid gap-4">
-        {scores.map((score, index) => (
+        {visibleScores.map((score, index) => (
           <div
             key={score.id}
             className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200"
