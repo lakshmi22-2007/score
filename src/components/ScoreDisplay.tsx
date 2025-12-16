@@ -39,7 +39,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
       setDeleting(null);
     }
   };
-  if (loading) {
+  if (loading && visibleScores.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8">
         <div className="flex items-center justify-center">
@@ -49,7 +49,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
     );
   }
 
-  if (scores.length === 0) {
+  if (visibleScores.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8">
         <p className="text-center text-gray-500">No scores yet. Add your first score above!</p>
