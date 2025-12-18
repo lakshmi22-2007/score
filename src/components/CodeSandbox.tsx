@@ -1,27 +1,27 @@
 import { useState, useRef } from 'react';
 import { Upload, Play, X } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 
 export function CodeSandbox() {
   const [html, setHtml] = useState('<h1>Hello World!</h1>\n<p>This is a test paragraph.</p>\n<button onclick="alert(\'Button clicked!\')">Click Me</button>');
   const [css, setCss] = useState('');
-  const [js, setJs] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const handleFileUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      const fileName = file.name.toLowerCase();
-      
-      if (fileName.endsWith('.html')) {
-        setHtml(content);
-      } else if (fileName.endsWith('.css')) {
-        setCss(content);
-      } else if (fileName.endsWith('.js')) {
-        setJs(content);
-      }
-    };
-    reader.readAsText(file);
+  const handleFileUpload = (files: FileList) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        const fileName = file.name.toLowerCase();
+        
+        if (fileName.endsWith('.html')) {
+          setHtml(content);
+        } else if (fileName.endsWith('.css')) {
+          setCss(content);
+        }
+      };
+      reader.readAsText(file);
+    });
   };
 
   const runCode = () => {
@@ -42,17 +42,6 @@ export function CodeSandbox() {
 </head>
 <body>
   ${html || '<p style="color: #999;">No HTML content</p>'}
-  <script>
-    window.onerror = function(msg, url, line, col, error) {
-      document.body.innerHTML += '<div style="background:#fee;border:1px solid #c00;color:#c00;padding:12px;margin-top:12px;border-radius:4px;font-family:monospace;font-size:12px;"><strong>Error:</strong> ' + msg + '<br>Line: ' + line + '</div>';
-      return false;
-    };
-    try {
-      ${js || ''}
-    } catch (e) {
-      document.body.innerHTML += '<div style="background:#fee;border:1px solid #c00;color:#c00;padding:12px;margin-top:12px;border-radius:4px;font-family:monospace;font-size:12px;"><strong>Error:</strong> ' + e.message + '</div>';
-    }
-  <\/script>
 </body>
 </html>`;
 
@@ -82,29 +71,58 @@ export function CodeSandbox() {
             <h3 className="text-sm font-semibold text-gray-700">Upload File</h3>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="block text-xs font-medium text-gray-600">Choose HTML, CSS, or JS file</label>
+            <label className="block text-xs font-medium text-gray-600">Choose HTML or CSS files</label>
             <input
               type="file"
-              accept=".html,.css,.js"
-              onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+              accept=".html,.css"
+              multiple
+              onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
-            <p className="text-xs text-gray-500">File type will be detected automatically based on extension</p>
+            <p className="text-xs text-gray-500">Upload All Files Here!</p>
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">HTML</label>
-            <textarea value={html} onChange={(e) => setHtml(e.target.value)} className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="<h1>Hello World</h1>" />
+            <Editor
+              height="192px"
+              defaultLanguage="html"
+              value={html}
+              onChange={(value) => setHtml(value || '')}
+              theme="vs-light"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 13,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 2,
+                wordWrap: 'on'
+              }}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">CSS</label>
-            <textarea value={css} onChange={(e) => setCss(e.target.value)} className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="h1 { color: blue; }" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">JavaScript</label>
-            <textarea value={js} onChange={(e) => setJs(e.target.value)} className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="console.log('Hello');" />
+            <Editor
+              height="192px"
+              defaultLanguage="css"
+              value={css}
+              onChange={(value) => setCss(value || '')}
+              theme="vs-light"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 13,
+                lineNumbers: 'on',
+                roundedSelection: false,
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                tabSize: 2,
+                wordWrap: 'on'
+              }}
+            />
           </div>
         </div>
 
