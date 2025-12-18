@@ -22,20 +22,20 @@ export function ScoreInput({ onScoreAdded }: ScoreInputProps) {
     try {
       const parsed = JSON.parse(jsonInput) as ScoreInput;
 
-      if (!parsed.player_name || typeof parsed.score !== 'number' || !parsed.game_name) {
-        setError('JSON must include: player_name (string), score (number), and game_name (string)');
+      if (!parsed.player_name || typeof parsed.score !== 'number' || !parsed.description) {
+        setError('JSON must include: player_name (string), score (number), and description (string)');
         setLoading(false);
         return;
       }
 
-      const { player_name, score, game_name, ...metadata } = parsed;
+      const { player_name, score, description, ...metadata } = parsed;
 
       const { error: dbError } = await supabase
         .from('scores')
         .insert({
           player_name,
           score,
-          game_name,
+          description,
           metadata,
         });
 
@@ -60,7 +60,7 @@ export function ScoreInput({ onScoreAdded }: ScoreInputProps) {
   const exampleJson = {
     player_name: "John Doe",
     score: 9500,
-    game_name: "Space Quest",
+    description: "Space Quest",
     level: 15,
     time_played: "45:30"
   };
@@ -83,7 +83,7 @@ export function ScoreInput({ onScoreAdded }: ScoreInputProps) {
             required
           />
           <p className="mt-2 text-xs text-gray-500">
-            Required fields: player_name, score, game_name. Additional fields will be stored as metadata.
+            Required fields: player_name, score, description. Additional fields will be stored as metadata.
           </p>
         </div>
 

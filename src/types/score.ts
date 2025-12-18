@@ -2,7 +2,7 @@ export interface Score {
   id: string;
   player_name: string;
   score: number;
-  game_name: string;
+  description: string;
   metadata: Record<string, unknown>;
   created_at: string;
 }
@@ -10,6 +10,6 @@ export interface Score {
 export interface ScoreInput {
   player_name: string;
   score: number;
-  game_name: string;
+  description: string;
   [key: string]: unknown;
 }
