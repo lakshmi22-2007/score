@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase';
 import { ScoreInput } from './components/ScoreInput';
 import { ScoreDisplay } from './components/ScoreDisplay';
 import { CodeSandbox } from './components/CodeSandbox';
+import { Navbar } from './components/Navbar';
 import type { Score } from './types/score';
 
 function App() {
@@ -31,9 +32,13 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <CodeSandbox />
+      <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div id="sandbox">
+        <CodeSandbox />
+      </div>
+      
+      <div id="scores" className="container mx-auto px-4 py-8 max-w-4xl">
         <header className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Trophy className="w-12 h-12 text-blue-600" />
