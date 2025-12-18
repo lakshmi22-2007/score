@@ -61,7 +61,7 @@ export function CodeSandbox() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Code Sandbox</h2>
         
@@ -87,14 +87,14 @@ export function CodeSandbox() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">HTML</label>
             <Editor
-              height="192px"
+              height="500px"
               defaultLanguage="html"
               value={html}
               onChange={(value) => setHtml(value || '')}
               theme="vs-light"
               options={{
                 minimap: { enabled: false },
-                fontSize: 13,
+                fontSize: 14,
                 lineNumbers: 'on',
                 roundedSelection: false,
                 scrollBeyondLastLine: false,
@@ -107,14 +107,14 @@ export function CodeSandbox() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">CSS</label>
             <Editor
-              height="192px"
+              height="500px"
               defaultLanguage="css"
               value={css}
               onChange={(value) => setCss(value || '')}
               theme="vs-light"
               options={{
                 minimap: { enabled: false },
-                fontSize: 13,
+                fontSize: 14,
                 lineNumbers: 'on',
                 roundedSelection: false,
                 scrollBeyondLastLine: false,
