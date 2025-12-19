@@ -61,7 +61,7 @@ export function CodeSandbox() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 ">
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Code Sandbox</h2>
         
@@ -84,14 +84,14 @@ export function CodeSandbox() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
+          <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-2">HTML</label>
             <Editor
-              height="500px"
+              height="350px"
               defaultLanguage="html"
               value={html}
               onChange={(value) => setHtml(value || '')}
-              theme="vs-light"
+              theme="solarized"
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -104,10 +104,10 @@ export function CodeSandbox() {
               }}
             />
           </div>
-          <div>
+          <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
             <label className="block text-sm font-medium text-gray-700 mb-2">CSS</label>
             <Editor
-              height="500px"
+              height="350px"
               defaultLanguage="css"
               value={css}
               onChange={(value) => setCss(value || '')}
@@ -129,11 +129,11 @@ export function CodeSandbox() {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button onClick={runCode} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
             <Play size={20} />
-            Generate Output
+            Run
           </button>
           <button onClick={clearOutput} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
             <X size={20} />
-            Clear Output
+            Clear
           </button>
         </div>
 
