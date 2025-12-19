@@ -1,10 +1,21 @@
 import { useState, useRef } from 'react';
-import { Upload, Play, X } from 'lucide-react';
+import { Upload, Play, X, Send, Sparkles } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { supabase } from '../lib/supabase';
 
-export function CodeSandbox() {
+interface CodeSandboxProps {
+  userName?: string;
+  userCollege?: string;
+}
+
+export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
   const [html, setHtml] = useState('<h1>Hello World!</h1>\n<p>This is a test paragraph.</p>\n<button onclick="alert(\'Button clicked!\')">Click Me</button>');
   const [css, setCss] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
+  const [scoring, setScoring] = useState(false);
+  const [scoreMessage, setScoreMessage] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const handleFileUpload = (files: FileList) => {
@@ -48,6 +59,14 @@ export function CodeSandbox() {
     iframeDoc.open();
     iframeDoc.write(content);
     iframeDoc.close();
+
+    setTimeout(() => {
+      const body = iframeDoc.body;
+      const scrollHeight = body.scrollHeight;
+      if (iframe && scrollHeight > 0) {
+        iframe.style.height = Math.max(400, scrollHeight + 40) + 'px';
+      }
+    }, 100);
   };
 
   const clearOutput = () => {
@@ -60,9 +79,172 @@ export function CodeSandbox() {
     iframeDoc.close();
   };
 
+  const submitCode = async () => {
+    setSubmitting(true);
+    setSubmitMessage('');
+
+    try {
+      const combinedCode = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
+    ${css || ''}
+  </style>
+</head>
+<body>
+  ${html || ''}
+</body>
+</html>`;
+
+      const serverEndpoint = 'YOUR_SERVER_ENDPOINT_HERE';
+      
+      const response = await fetch(serverEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: combinedCode,
+          html: html,
+          css: css,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit code');
+      }
+
+      setSubmitMessage('Code submitted successfully!');
+      setTimeout(() => setSubmitMessage(''), 3000);
+    } catch (error) {
+      setSubmitMessage('Error submitting code. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const scoreWithAI = async () => {
+    setScoring(true);
+    setScoreMessage('');
+
+    try {
+      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+      
+      if (!groqApiKey || groqApiKey === 'your_groq_api_key_here') {
+        setScoreMessage('Please configure GROQ API key in .env file');
+        setScoring(false);
+        return;
+      }
+
+      const combinedCode = `HTML:\n${html}\n\nCSS:\n${css}`;
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${groqApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<brief evaluation>"}'
+            },
+            {
+              role: 'user',
+              content: `Evaluate this code and provide a creativity score out of 100:\n\n${combinedCode}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to get AI score');
+      }
+
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
+      
+      // More flexible JSON extraction
+      let result;
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+        if (!jsonMatch) {
+          throw new Error('Invalid AI response format');
+        }
+        result = JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        throw new Error('Could not parse AI response');
+      }
+      
+      const score = Math.round(result.score);
+      const feedback = result.feedback || 'Creative code!';
+
+      if (isNaN(score) || score < 0 || score > 100) {
+        throw new Error('Invalid score from AI');
+      }
+
+      const { data: insertedData, error: dbError } = await supabase
+        .from('scores')
+        .insert({
+          player_name: userName || 'Anonymous',
+          score: score,
+          description: feedback,
+          metadata: {
+            html_length: html.length,
+            css_length: css.length,
+            scored_by: 'AI',
+            feedback: feedback,
+            userName: userName,
+            userCollege: userCollege,
+            timestamp: new Date().toISOString(),
+          },
+        })
+        .select();
+
+      if (dbError) {
+        throw new Error(`Database error: ${dbError.message}`);
+      }
+
+      setScoreMessage('✅ Submitted successfully!');
+      setShowNotification(true);
+      setTimeout(() => {
+        setScoreMessage('');
+        setShowNotification(false);
+      }, 5000);
+    } catch (error: any) {
+      const errorMsg = error.message || 'Unknown error occurred';
+      setScoreMessage(`Error: ${errorMsg}`);
+      console.error('AI Scoring error:', error);
+      setScoring(false);
+    }
+  };{showNotification && (
+          <div className="fixed top-4 right-4 z-50 animate-slide-in">
+            <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold">Score Submitted!</p>
+                <p className="text-sm text-green-100">Your code has been evaluated and scored</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        
+
   return (
-    <div className="container mx-auto px-4 py-8 ">
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Code Sandbox</h2>
         
         <div className="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
@@ -139,9 +321,38 @@ export function CodeSandbox() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Output</label>
-          <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full h-80 border border-gray-300 rounded-lg bg-white" title="Code Output" />
+          <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full min-h-96 border-2 border-gray-300 rounded-lg bg-white" title="Code Output" style={{ height: '400px' }} />
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <button
+            onClick={submitCode}
+            disabled={submitting}
+            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+          >
+            <Send size={20} />
+            {submitting ? 'Submitting...' : 'Submit Code'}
+          </button>
+          {submitMessage && (
+            <p className={`mt-2 text-center text-sm font-medium ${submitMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+              {submitMessage}
+            </p>
+          )}
+
+          <button
+            onClick={scoreWithAI}
+            disabled={scoring}
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+          >
+            <Sparkles size={20} />
+            {scoring ? 'Scoring...' : 'Score'}
+          </button>
+          {scoreMessage && (
+            <p className={`mt-2 text-center text-sm font-medium ${scoreMessage.includes('Error') || scoreMessage.includes('configure') ? 'text-red-600' : 'text-purple-600'}`}>
+              {scoreMessage}
+            </p>
+          )}
         </div>
       </div>
-    </div>
   );
 }

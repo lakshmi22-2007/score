@@ -3,6 +3,8 @@ export interface Score {
   player_name: string;
   score: number;
   description: string;
+  name?: string;
+  college?: string;
   metadata: Record<string, unknown>;
   created_at: string;
 }

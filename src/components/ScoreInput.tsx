@@ -5,9 +5,11 @@ import type { ScoreInput } from '../types/score';
 
 interface ScoreInputProps {
   onScoreAdded: () => void;
+  userName?: string;
+  userCollege?: string;
 }
 
-export function ScoreInput({ onScoreAdded }: ScoreInputProps) {
+export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputProps) {
   const [jsonInput, setJsonInput] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -36,6 +38,8 @@ export function ScoreInput({ onScoreAdded }: ScoreInputProps) {
           player_name,
           score,
           description,
+          name: userName,
+          college: userCollege,
           metadata,
         });
 

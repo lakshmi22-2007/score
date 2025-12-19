@@ -98,15 +98,12 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
+      
                     <div className="flex items-center gap-2 mb-2">
                       <User className="w-4 h-4 text-gray-400" />
                       <h3 className="text-lg font-bold text-gray-900">{score.player_name}</h3>
                     </div>
-                    <div className="px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-800 rounded-md text-sm">
-                      {score.description}
-                    </div>
-                  </div>
+                  
 
                   <div className="flex items-start gap-3">
                     <div className="text-right">

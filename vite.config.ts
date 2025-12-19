@@ -10,4 +10,14 @@ export default defineConfig({
   worker: {
     format: 'es',
   },
+  build: {
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
 });
