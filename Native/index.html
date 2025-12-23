@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Sandbox</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sign In Page -->
+    <div id="signInPage" class="page active">
+        <div class="sign-in-container">
+            <div class="sign-in-card">
+                <div class="sign-in-header">
+                    <svg class="icon-large" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <h1>Welcome to Code Sandbox</h1>
+                    <p>Enter your details to get started</p>
+                </div>
+                <form id="signInForm">
+                    <div class="form-group">
+                        <label for="userName">Name</label>
+                        <input type="text" id="userName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userCollege">College</label>
+                        <input type="text" id="userCollege" placeholder="Enter your college" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Get In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="page">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                    </svg>
+                    <span>Code Sandbox</span>
+                </div>
+                <div class="nav-user">
+                    <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    <span id="navUserName">User</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Success Notification -->
+        <div id="notification" class="notification">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="notification-title">Score Submitted!</p>
+                <p class="notification-subtitle">Your code has been evaluated and scored</p>
+            </div>
+        </div>
+
+        <!-- Code Sandbox Container -->
+        <div class="container">
+            <header class="header">
+                <div class="header-content">
+                    <svg class="icon-large" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                    </svg>
+                    <h1>Code Sandbox</h1>
+                </div>
+                <p>Create and preview HTML & CSS code in real-time</p>
+            </header>
+
+            <!-- Sandbox Card -->
+            <div class="sandbox-card">
+                <h2>Code Sandbox</h2>
+
+                <!-- File Upload -->
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <h3>Upload File</h3>
+                    </div>
+                    <label class="file-upload-label">Choose HTML or CSS files</label>
+                    <input type="file" id="fileInput" accept=".html,.css" multiple class="file-input">
+                    <p class="upload-hint">Upload All Files Here!</p>
+                </div>
+
+                <!-- Code Editors -->
+                <div class="editors-grid">
+                    <div class="editor-container">
+                        <label class="editor-label">HTML</label>
+                        <textarea id="htmlEditor" class="code-editor" placeholder="Enter HTML code..."><h1>Hello World!</h1>
+<p>This is a test paragraph.</p>
+<button onclick="alert('Button clicked!')">Click Me</button></textarea>
+                    </div>
+                    <div class="editor-container">
+                        <label class="editor-label">CSS</label>
+                        <textarea id="cssEditor" class="code-editor" placeholder="Enter CSS code..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-grid">
+                    <button id="runBtn" class="btn btn-primary">
+                        <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Run
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary">
+                        <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+
+                <!-- Output -->
+                <div class="output-section">
+                    <label class="editor-label">Output</label>
+                    <iframe id="outputFrame" class="output-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="submit-section">
+                    <button id="submitBtn" class="btn btn-success" disabled>
+                        <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        <span id="submitBtnText">Submit Code</span>
+                    </button>
+                    <p id="submitMessage" class="message"></p>
+
+                    <button id="scoreBtn" class="btn btn-purple">
+                        <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        <span id="scoreBtnText">Score</span>
+                    </button>
+                    <p id="scoreMessage" class="message"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

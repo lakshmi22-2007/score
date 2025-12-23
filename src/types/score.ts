@@ -5,6 +5,8 @@ export interface Score {
   description: string;
   name?: string;
   college?: string;
+  html_code?: string;
+  css_code?: string;
   metadata: Record<string, unknown>;
   created_at: string;
 }

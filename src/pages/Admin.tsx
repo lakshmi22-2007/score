@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Plus } from 'lucide-react';
+import { Trophy, Plus, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ScoreInput } from '../components/ScoreInput';
 import { ScoreDisplay } from '../components/ScoreDisplay';
@@ -13,9 +13,15 @@ export function Admin({ user }: AdminProps) {
   const [scores, setScores] = useState<Score[]>([]);
   const [loading, setLoading] = useState(true);
   const [showScoreInput, setShowScoreInput] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const fetchScores = async () => {
-    setLoading(true);
+  const fetchScores = async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    
     const { data, error } = await supabase
       .from('scores')
       .select('*')
@@ -26,13 +32,18 @@ export function Admin({ user }: AdminProps) {
     } else {
       setScores(data || []);
     }
-    setLoading(false);
+    
+    if (isManualRefresh) {
+      setRefreshing(false);
+    } else {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchScores();
     
-    // Auto-refresh every 60 seconds
+    // Auto-refresh every 1 minute (60 seconds)
     const interval = setInterval(() => {
       fetchScores();
     }, 60000);
@@ -74,13 +85,23 @@ export function Admin({ user }: AdminProps) {
           <Trophy className="w-12 h-12 text-blue-600" />
           <h1 className="text-4xl font-bold text-gray-900">Leaderboard</h1>
         </div>
-        <button
-          onClick={() => setShowScoreInput(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center gap-2 mx-auto"
-        >
-          <Plus size={20} />
-          Enter Score
-        </button>
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => setShowScoreInput(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Enter Score
+          </button>
+          <button
+            onClick={() => fetchScores(true)}
+            disabled={refreshing}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+          >
+            <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </header>
 
       <ScoreDisplay scores={scores} loading={loading} onScoreDeleted={fetchScores} />

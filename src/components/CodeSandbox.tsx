@@ -2,12 +2,12 @@ import { useState, useRef } from 'react';
 import { Upload, Play, X, Send, Sparkles } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
-
+//
 interface CodeSandboxProps {
   userName?: string;
   userCollege?: string;
 }
-
+//
 export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
   const [html, setHtml] = useState('<h1>Hello World!</h1>\n<p>This is a test paragraph.</p>\n<button onclick="alert(\'Button clicked!\')">Click Me</button>');
   const [css, setCss] = useState('');
@@ -84,43 +84,102 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
     setSubmitMessage('');
 
     try {
-      const combinedCode = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
-    ${css || ''}
-  </style>
-</head>
-<body>
-  ${html || ''}
-</body>
-</html>`;
-
-      const serverEndpoint = 'YOUR_SERVER_ENDPOINT_HERE';
+      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
       
-      const response = await fetch(serverEndpoint, {
+      if (!groqApiKey || groqApiKey === 'your_groq_api_key_here') {
+        setSubmitMessage('Please configure GROQ API key in .env file');
+        setSubmitting(false);
+        return;
+      }
+
+      const combinedCode = `HTML:\n${html}\n\nCSS:\n${css}`;
+
+      // Get AI score
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${groqApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          code: combinedCode,
-          html: html,
-          css: css,
-          timestamp: new Date().toISOString(),
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<1-2 sentence brief evaluation>"}'
+            },
+            {
+              role: 'user',
+              content: `Evaluate this code and provide a creativity score out of 100:\n\n${combinedCode}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 150,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to submit code');
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to get AI score');
       }
 
-      setSubmitMessage('Code submitted successfully!');
-      setTimeout(() => setSubmitMessage(''), 3000);
-    } catch (error) {
-      setSubmitMessage('Error submitting code. Please try again.');
+      const data = await response.json();
+      const aiResponse = data.choices[0].message.content;
+      
+      // Extract JSON
+      let result;
+      try {
+        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
+        if (!jsonMatch) {
+          throw new Error('Invalid AI response format');
+        }
+        result = JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        throw new Error('Could not parse AI response');
+      }
+      
+      const score = Math.round(result.score);
+      const feedback = result.feedback || 'Creative code!';
+
+      if (isNaN(score) || score < 0 || score > 100) {
+        throw new Error('Invalid score from AI');
+      }
+
+      // Save to database with AI score
+      const { data: insertedData, error: dbError } = await supabase
+        .from('scores')
+        .insert({
+          player_name: userName || 'Anonymous',
+          score: score,
+          description: feedback,
+          html_code: html,
+          css_code: css,
+          metadata: {
+            html_length: html.length,
+            css_length: css.length,
+            scored_by: 'AI',
+            feedback: feedback,
+            userName: userName,
+            userCollege: userCollege,
+            timestamp: new Date().toISOString(),
+          },
+        })
+        .select();
+
+      if (dbError) {
+        throw new Error(`Database error: ${dbError.message}`);
+      }
+
+      setSubmitMessage('✅ Code submitted and scored successfully!');
+      setShowNotification(true);
+      setTimeout(() => {
+        setSubmitMessage('');
+        setShowNotification(false);
+      }, 5000);
+    } catch (error: any) {
+      const errorMsg = error.message || 'Unknown error occurred';
+      setSubmitMessage(`Error: ${errorMsg}`);
+      console.error('Submission error:', error);
     } finally {
       setSubmitting(false);
     }
@@ -152,7 +211,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           messages: [
             {
               role: 'system',
-              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<brief evaluation>"}'
+              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<1-2 sentence brief evaluation>"}'
             },
             {
               role: 'user',
@@ -160,7 +219,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             }
           ],
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 150,
         }),
       });
 
@@ -197,6 +256,8 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           player_name: userName || 'Anonymous',
           score: score,
           description: feedback,
+          html_code: html,
+          css_code: css,
           metadata: {
             html_length: html.length,
             css_length: css.length,
@@ -324,32 +385,18 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full min-h-96 border-2 border-gray-300 rounded-lg bg-white" title="Code Output" style={{ height: '400px' }} />
         </div>
 
-        <div className="mt-6 space-y-4">
+        <div className="mt-6">
           <button
             onClick={submitCode}
             disabled={submitting}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
           >
-            <Send size={20} />
-            {submitting ? 'Submitting...' : 'Submit Code'}
+            <Sparkles size={20} />
+            {submitting ? 'Submitting...' : 'Submit'}
           </button>
           {submitMessage && (
             <p className={`mt-2 text-center text-sm font-medium ${submitMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
               {submitMessage}
-            </p>
-          )}
-
-          <button
-            onClick={scoreWithAI}
-            disabled={scoring}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-          >
-            <Sparkles size={20} />
-            {scoring ? 'Scoring...' : 'Score'}
-          </button>
-          {scoreMessage && (
-            <p className={`mt-2 text-center text-sm font-medium ${scoreMessage.includes('Error') || scoreMessage.includes('configure') ? 'text-red-600' : 'text-purple-600'}`}>
-              {scoreMessage}
             </p>
           )}
         </div>
