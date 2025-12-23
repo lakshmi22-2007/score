@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Upload, Play, X, Send, Sparkles } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, Play, Save, Send, Sparkles } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
 //
@@ -16,7 +16,88 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
   const [scoring, setScoring] = useState(false);
   const [scoreMessage, setScoreMessage] = useState('');
   const [showNotification, setShowNotification] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Load saved code on mount
+  useEffect(() => {
+    if (userName) {
+      loadSavedCode();
+    }
+  }, [userName]);
+
+  const loadSavedCode = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_code')
+        .select('html_code, css_code')
+        .eq('user_name', userName)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data && !error) {
+        setHtml(data.html_code || '<!-- Type your HTML code here -->');
+        setCss(data.css_code || '/* Type your CSS code here */');
+      }
+    } catch (error) {
+      console.log('No saved code found');
+    }
+  };
+
+  const saveCode = async () => {
+    setSaving(true);
+    setSaveMessage('');
+
+    try {
+      if (!userName) {
+        setSaveMessage('Please sign in to save code');
+        setSaving(false);
+        return;
+      }
+
+      // Check if user already has saved code
+      const { data: existing } = await supabase
+        .from('saved_code')
+        .select('id')
+        .eq('user_name', userName)
+        .single();
+
+      if (existing) {
+        // Update existing
+        const { error } = await supabase
+          .from('saved_code')
+          .update({
+            html_code: html,
+            css_code: css,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_name', userName);
+
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('saved_code')
+          .insert({
+            user_name: userName,
+            html_code: html,
+            css_code: css,
+          });
+
+        if (error) throw error;
+      }
+
+      setSaveMessage('✅ Code saved successfully!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } catch (error: any) {
+      setSaveMessage(`Error: ${error.message}`);
+      console.error('Save error:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleFileUpload = (files: FileList) => {
     Array.from(files).forEach(file => {
@@ -374,11 +455,20 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             <Play size={20} />
             Run
           </button>
-          <button onClick={clearOutput} className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-            <X size={20} />
-            Clear
+          <button 
+            onClick={saveCode} 
+            disabled={saving}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+          >
+            <Save size={20} />
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
+        {saveMessage && (
+          <p className={`mb-4 text-center text-sm font-medium ${saveMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+            {saveMessage}
+          </p>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Output</label>
