@@ -9,8 +9,8 @@ interface CodeSandboxProps {
 }
 //
 export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
-  const [html, setHtml] = useState('<h1>Hello World!</h1>\n<p>This is a test paragraph.</p>\n<button onclick="alert(\'Button clicked!\')">Click Me</button>');
-  const [css, setCss] = useState('');
+  const [html, setHtml] = useState('<!-- Type your HTML code here -->');
+  const [css, setCss] = useState('/* Type your CSS code here */');
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [scoring, setScoring] = useState(false);

@@ -18,11 +18,13 @@ export function Navbar({ userName, questions = [], onRefresh }: NavbarProps) {
   const [showQuestion, setShowQuestion] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const iframeRefs = useRef<{ [key: string]: HTMLIFrameElement | null }>({});
 
   useEffect(() => {
-    if (selectedQuestion && iframeRef.current) {
-      const iframe = iframeRef.current;
+    if (selectedQuestion) {
+      const iframe = iframeRefs.current[selectedQuestion.id];
+      if (!iframe) return;
+
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
       if (!iframeDoc) return;
 
@@ -124,9 +126,9 @@ export function Navbar({ userName, questions = [], onRefresh }: NavbarProps) {
                           
                           {selectedQuestion?.id === question.id && (
                             <div className="px-4 pb-4">
-                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
                                 <iframe
-                                  ref={iframeRef}
+                                  ref={(el) => iframeRefs.current[question.id] = el}
                                   sandbox="allow-scripts allow-same-origin"
                                   className="w-full h-96 bg-white border-0"
                                   style={{ display: 'block' }}
