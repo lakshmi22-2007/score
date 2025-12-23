@@ -431,7 +431,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                       ref={iframeRef}
                       sandbox="allow-scripts allow-same-origin"
                       className="w-full border-2 border-gray-300 rounded-lg bg-white transition-all duration-300"
-                      style={{ minHeight: '200px', maxHeight: '800px' }}
+                        style={{ minHeight: '200px', maxHeight: '800px' }}
                       title="Code Result"
                     />
                   </div>
