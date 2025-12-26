@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Pixel Perfect logo">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="16" fill="url(#g)" />
+  <g transform="translate(18,22)" fill="#fff">
+    <rect x="0" y="0" width="22" height="56" rx="4" />
+    <rect x="30" y="0" width="22" height="56" rx="4" />
+  </g>
+</svg>

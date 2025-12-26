@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { ScoreInput } from '../types/score';
+import { compareOutputs } from '../lib/scoring';
 
 interface ScoreInputProps {
   onScoreAdded: () => void;
@@ -24,23 +25,75 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
     try {
       const parsed = JSON.parse(jsonInput) as ScoreInput;
 
-      if (!parsed.player_name || typeof parsed.score !== 'number' || !parsed.description) {
-        setError('JSON must include: player_name (string), score (number), and description (string)');
+      const parsedAny = parsed as any;
+      if (!parsedAny.player_name || !parsedAny.description) {
+        setError('JSON must include: player_name (string) and description (string). Score is optional and will be computed when submitting code.');
         setLoading(false);
         return;
       }
 
-      const { player_name, score, description, ...metadata } = parsed;
+      const {
+        player_name: playerName,
+        description: desc,
+        score: providedScoreRaw,
+        question_id,
+        submitted_html,
+        submitted_css,
+        ...metadata
+      } = parsedAny;
+
+      const providedScore = typeof providedScoreRaw === 'number' ? providedScoreRaw : undefined;
+      let finalScore = providedScore;
+
+      // If a question id (UUID or round number) and submitted code are provided, fetch expected output and compute score
+      if ((question_id || question_id === 0) && (submitted_html || submitted_css)) {
+        try {
+          // Support passing either the question UUID or the round number
+          let qQuery = supabase.from('questions').select('*');
+          const qIsUuid = typeof question_id === 'string' && question_id.includes('-');
+          if (qIsUuid) {
+            qQuery = qQuery.eq('id', question_id).single();
+          } else {
+            // treat as round number
+            const roundNo = typeof question_id === 'number' ? question_id : parseInt(String(question_id), 10);
+            if (Number.isNaN(roundNo)) throw new Error('Invalid question identifier');
+            qQuery = qQuery.eq('round_no', roundNo).single();
+          }
+
+          const { data: qdata, error: qerr } = await qQuery as any;
+
+          if (qerr || !qdata) throw qerr || new Error('Question not found');
+
+          const expectedHtml = qdata?.html_code || '';
+          const expectedCss = qdata?.css_code || '';
+
+          const result = await compareOutputs(expectedHtml, expectedCss, submitted_html || '', submitted_css || '');
+          finalScore = result.score;
+          metadata.scoring = result;
+        } catch (err) {
+          // scoring failure shouldn't block insert; store error in metadata
+          metadata.scoring_error = err instanceof Error ? err.message : String(err);
+        }
+      }
+
+      let scoreToInsert = typeof finalScore === 'number' ? finalScore : providedScore;
+      if (typeof scoreToInsert !== 'number') {
+        // ensure DB receives a numeric score (scores table has DEFAULT 0)
+        scoreToInsert = 0;
+      }
+
+      const player_name = playerName;
+      const description = desc;
 
       const { error: dbError } = await supabase
         .from('scores')
         .insert({
           player_name,
-          score,
+          score: scoreToInsert,
           description,
           name: userName,
           college: userCollege,
-          metadata,
+          metadata: { ...metadata, ...other },
         });
 
       if (dbError) throw dbError;
@@ -63,7 +116,7 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
 
   const exampleJson = {
     player_name: "John Doe",
-    score: 9500,
+    // score is optional; include when known or let system compute from submitted code
     description: "Space Quest",
     level: 15,
     time_played: "45:30"
@@ -86,8 +139,8 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
             className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
             required
           />
-          <p className="mt-2 text-xs text-gray-500">
-            Required fields: player_name, score, description. Additional fields will be stored as metadata.
+            <p className="mt-2 text-xs text-gray-500">
+            Required fields: player_name, description. Optional: `score` or include `question_id`, `submitted_html`, and `submitted_css` to compute a score automatically.
           </p>
         </div>
 

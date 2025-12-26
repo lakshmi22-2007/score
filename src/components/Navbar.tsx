@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Code2, User, ChevronDown, FileText, RefreshCw } from 'lucide-react';
+import { User, ChevronDown, FileText, RefreshCw } from 'lucide-react';
+import logo from '../assets/logo.svg';
 
 interface Question {
   id: string;
@@ -77,7 +78,7 @@ export function Navbar({ userName, questions = [], onRefresh }: NavbarProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <Code2 className="w-8 h-8 text-blue-600" />
+            <img src={logo} alt="Pixel Perfect logo" className="w-8 h-8" />
             <span className="text-2xl font-bold text-gray-900">Pixel Perfect</span>
           </div>
 
