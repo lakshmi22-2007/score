@@ -69,6 +69,11 @@ function App() {
     localStorage.setItem('user', JSON.stringify(userData));
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
   const isAdmin = user && ADMIN_USERS.includes(user.name);
 
   if (!user) {
@@ -82,6 +87,7 @@ function App() {
           userName={user.name}
           questions={questions}
           onRefresh={fetchCurrentQuestion}
+          onLogout={handleLogout}
         />
         
         <Routes>

@@ -13,6 +13,164 @@
   }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(139, 69, 19, 0.5), 0 0 20px rgba(139, 69, 19, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(139, 69, 19, 0.8), 0 0 30px rgba(139, 69, 19, 0.5); }
+}
+
+@keyframes chest-open {
+  0% {
+    transform: perspective(1200px) rotateX(-90deg);
+    opacity: 0;
+    transform-origin: top center;
+  }
+  50% {
+    transform: perspective(1200px) rotateX(-45deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: perspective(1200px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
+}
+
+.animate-chest-open {
+  animation: chest-open 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Minecraft-style body background */
+body {
+  background-color: #8B4513;
+  background-image: 
+    linear-gradient(45deg, #654321 25%, transparent 25%),
+    linear-gradient(-45deg, #654321 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #654321 75%),
+    linear-gradient(-45deg, transparent 75%, #654321 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  font-family: 'Press Start 2P', cursive;
+  image-rendering: pixelated;
+}
+
+/* Pixelated effect for images */
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Minecraft button style */
+.minecraft-btn {
+  position: relative;
+  border: 4px solid #000;
+  box-shadow: 
+    inset -4px -4px 0 rgba(0, 0, 0, 0.4),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.1s;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+.minecraft-btn:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.minecraft-btn:active {
+  box-shadow: 
+    inset 4px 4px 0 rgba(0, 0, 0, 0.4),
+    inset -4px -4px 0 rgba(255, 255, 255, 0.4);
+  transform: scale(0.98);
+}
+
+/* Minecraft panel/card style */
+.minecraft-panel {
+  border: 4px solid #000;
+  box-shadow: 
+    inset -4px -4px 0 rgba(0, 0, 0, 0.3),
+    inset 4px 4px 0 rgba(255, 255, 255, 0.3),
+    8px 8px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Grass block texture background */
+.grass-texture {
+  background: linear-gradient(to bottom, #7cbd56 0%, #7cbd56 20%, #8b6914 20%, #8b6914 100%);
+}
+
+/* Stone texture background */
+.stone-texture {
+  background-color: #7f7f7f;
+  background-image: 
+    radial-gradient(circle at 20% 20%, #8c8c8c 1px, transparent 1px),
+    radial-gradient(circle at 80% 80%, #6e6e6e 1px, transparent 1px),
+    radial-gradient(circle at 40% 60%, #757575 1px, transparent 1px);
+  background-size: 10px 10px;
+}
+
+/* Wood planks texture */
+.wood-texture {
+  background: linear-gradient(90deg, #9c6b3f 0%, #9c6b3f 95%, #7a5330 95%, #7a5330 100%);
+  background-size: 20px 100%;
+}
+
+/* Diamond ore glow effect */
+.diamond-glow {
+  box-shadow: 0 0 20px rgba(93, 219, 255, 0.6), 0 0 40px rgba(93, 219, 255, 0.4);
+}
+
+/* Custom Scrollbar for Question List */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #f59e0b #78350f;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #78350f;
+  border-left: 3px solid #000;
+  border-right: 3px solid #000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  border: 2px solid #000;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fcd34d 0%, #fbbf24 50%, #f59e0b 100%);
 }

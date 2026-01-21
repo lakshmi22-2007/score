@@ -17,17 +17,17 @@ export function SignIn({ onSignIn }: SignInProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-orange-900 via-amber-800 to-yellow-900 flex items-center justify-center px-4">
+      <div className="minecraft-panel bg-minecraft-wood wood-texture p-8 w-full max-w-md animate-float">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Pixel Perfect</h1>
-          <p className="text-gray-600">Enter Details to continue
+          <h1 className="text-2xl md:text-3xl font-minecraft font-bold text-white mb-2" style={{ textShadow: '4px 4px 0 rgba(0,0,0,0.7)' }}>Pixel Perfect</h1>
+          <p className="text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Enter to start crafting
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
               <User className="inline w-4 h-4 mr-2" />
               Team Name
             </label>
@@ -35,14 +35,14 @@ export function SignIn({ onSignIn }: SignInProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your Team name"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="Team name"
+              className="w-full px-4 py-3 minecraft-panel bg-gradient-to-br from-amber-700 to-amber-900 text-white font-minecraft text-xs placeholder-amber-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
               <GraduationCap className="inline w-4 h-4 mr-2" />
               College
             </label>
@@ -50,17 +50,17 @@ export function SignIn({ onSignIn }: SignInProps) {
               type="text"
               value={college}
               onChange={(e) => setCollege(e.target.value)}
-              placeholder="Enter your college name"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="College name"
+              className="w-full px-4 py-3 minecraft-panel bg-gradient-to-br from-amber-700 to-amber-900 text-white font-minecraft text-xs placeholder-amber-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 transition-all"
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+            className="minecraft-btn w-full bg-minecraft-grass grass-texture hover:brightness-110 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 shadow-lg hover:shadow-xl animate-glow"
           >
-            Get In
+            <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Get In</span>
           </button>
         </form>
       </div>

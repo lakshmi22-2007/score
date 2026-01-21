@@ -367,55 +367,56 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
       console.error('AI Scoring error:', error);
       setScoring(false);
     }
-  };{showNotification && (
-          <div className="fixed top-4 right-4 z-50 animate-slide-in">
-            <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3">
-              <div className="flex-shrink-0">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold">Score Submitted!</p>
-                <p className="text-sm text-green-100">Your code has been evaluated and scored</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        
+  };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Code Sandbox</h2>
+    <>
+      {showNotification && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="minecraft-panel bg-minecraft-emerald grass-texture text-white px-6 py-4 shadow-2xl flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-minecraft text-xs" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Score Submitted!</p>
+              <p className="text-xs" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.5)' }}>Your code has been evaluated</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="minecraft-panel bg-minecraft-stone stone-texture p-6 mb-8">
+        <h2 className="text-xl font-minecraft font-bold text-white mb-6" style={{ textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>Crafting Bench</h2>
         
-        <div className="mb-6 p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+        <div className="mb-6 p-4 minecraft-panel bg-minecraft-dirt wood-texture">
           <div className="flex items-center gap-2 mb-3">
-            <Upload className="w-5 h-5 text-gray-600" />
-            <h3 className="text-sm font-semibold text-gray-700">Upload File</h3>
+            <Upload className="w-5 h-5 text-white" />
+            <h3 className="text-xs font-minecraft font-semibold text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Upload Files</h3>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="block text-xs font-medium text-gray-600">Choose HTML or CSS files</label>
+            <label className="block text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Choose HTML or CSS</label>
             <input
               type="file"
               accept=".html,.css"
               multiple
               onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+              className="block w-full text-xs font-minecraft text-white file:mr-4 file:py-2 file:px-4 file:minecraft-btn file:border-0 file:text-xs file:font-minecraft file:bg-minecraft-wood file:text-white hover:file:brightness-110 cursor-pointer"
             />
-            <p className="text-xs text-gray-500">Upload All Files Here!</p>
+            <p className="text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Upload All Files!</p>
           </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
-            <label className="block text-sm font-medium text-gray-700 mb-2">HTML</label>
+          <div className="p-4 minecraft-panel bg-minecraft-obsidian">
+            <label className="block text-xs font-minecraft text-minecraft-diamond mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>HTML</label>
             <Editor
               height="350px"
               defaultLanguage="html"
               value={html}
               onChange={(value) => setHtml(value || '')}
-              theme="solarized"
+              theme="vs-dark"
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -428,14 +429,14 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
               }}
             />
           </div>
-          <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
-            <label className="block text-sm font-medium text-gray-700 mb-2">CSS</label>
+          <div className="p-4 minecraft-panel bg-minecraft-obsidian">
+            <label className="block text-xs font-minecraft text-minecraft-emerald mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>CSS</label>
             <Editor
               height="350px"
               defaultLanguage="css"
               value={css}
               onChange={(value) => setCss(value || '')}
-              theme="vs-light"
+              theme="vs-dark"
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -451,45 +452,46 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <button onClick={runCode} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+          <button onClick={runCode} className="minecraft-btn bg-minecraft-grass grass-texture hover:brightness-110 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2">
             <Play size={20} />
-            Run
+            <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Run</span>
           </button>
           <button 
             onClick={saveCode} 
             disabled={saving}
-            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            className="minecraft-btn bg-minecraft-lapis hover:brightness-110 disabled:bg-gray-600 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <Save size={20} />
-            {saving ? 'Saving...' : 'Save'}
+            <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{saving ? 'Saving...' : 'Save'}</span>
           </button>
         </div>
         {saveMessage && (
-          <p className={`mb-4 text-center text-sm font-medium ${saveMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`mb-4 text-center text-xs font-minecraft ${saveMessage.includes('success') ? 'text-minecraft-emerald' : 'text-minecraft-redstone'}`} style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
             {saveMessage}
           </p>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Output</label>
-          <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full min-h-96 border-2 border-gray-300 rounded-lg bg-white" title="Code Output" style={{ height: '400px' }} />
+          <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Output</label>
+          <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full min-h-96 minecraft-panel bg-white" title="Code Output" style={{ height: '400px' }} />
         </div>
 
         <div className="mt-6">
           <button
             onClick={submitCode}
             disabled={submitting}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            className="minecraft-btn w-full bg-minecraft-gold hover:brightness-110 disabled:bg-gray-600 text-minecraft-obsidian font-minecraft text-xs py-3 px-6 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 animate-glow"
           >
             <Sparkles size={20} />
-            {submitting ? 'Submitting...' : 'Submit'}
+            <span style={{ textShadow: '2px 2px 0 rgba(255,255,255,0.5)' }}>{submitting ? 'Submitting...' : 'Submit'}</span>
           </button>
           {submitMessage && (
-            <p className={`mt-2 text-center text-sm font-medium ${submitMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>
+            <p className={`mt-2 text-center text-xs font-minecraft ${submitMessage.includes('success') ? 'text-minecraft-emerald' : 'text-minecraft-redstone'}`} style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
               {submitMessage}
             </p>
           )}
         </div>
       </div>
+    </>
   );
 }

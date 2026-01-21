@@ -123,12 +123,12 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Add New Score</h2>
+    <div className="minecraft-panel bg-minecraft-wood wood-texture p-6 mb-8">
+      <h2 className="text-xl font-minecraft font-bold text-white mb-4" style={{ textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>Add New Score</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="json-input" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="json-input" className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
             JSON Input
           </label>
           <textarea
@@ -136,33 +136,33 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
             value={jsonInput}
             onChange={(e) => setJsonInput(e.target.value)}
             placeholder={JSON.stringify(exampleJson, null, 2)}
-            className="w-full h-48 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+            className="minecraft-panel w-full h-48 px-4 py-3 bg-minecraft-obsidian text-white font-mono text-sm focus:ring-4 focus:ring-minecraft-diamond"
             required
           />
-            <p className="mt-2 text-xs text-gray-500">
-            Required fields: player_name, description. Optional: `score` or include `question_id`, `submitted_html`, and `submitted_css` to compute a score automatically.
+            <p className="mt-2 text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>
+            Required: player_name, description. Optional: score or question_id + code
           </p>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="minecraft-panel p-4 bg-minecraft-redstone">
+            <p className="text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-sm text-green-600">{success}</p>
+          <div className="minecraft-panel p-4 bg-minecraft-emerald grass-texture">
+            <p className="text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{success}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="minecraft-btn w-full bg-minecraft-gold hover:brightness-110 text-minecraft-obsidian font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed animate-glow"
         >
           <Plus size={20} />
-          {loading ? 'Adding Score...' : 'Add Score'}
+          <span style={{ textShadow: '2px 2px 0 rgba(255,255,255,0.5)' }}>{loading ? 'Adding...' : 'Add Score'}</span>
         </button>
       </form>
     </div>

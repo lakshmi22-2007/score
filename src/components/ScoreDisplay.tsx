@@ -192,9 +192,9 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
   
   if (loading && visibleScores.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8">
+      <div className="minecraft-panel bg-minecraft-stone stone-texture p-8">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-minecraft-diamond border-t-transparent"></div>
         </div>
       </div>
     );
@@ -202,8 +202,8 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
 
   if (visibleScores.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8">
-        <p className="text-center text-gray-500">No scores yet. Add your first score above!</p>
+      <div className="minecraft-panel bg-minecraft-wood wood-texture p-8">
+        <p className="text-center text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>No scores yet. Add your first score!</p>
       </div>
     );
   }
@@ -220,25 +220,25 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
   };
 
   const getMedalColor = (index: number) => {
-    if (index === 0) return 'text-yellow-500';
-    if (index === 1) return 'text-gray-400';
-    if (index === 2) return 'text-orange-600';
+    if (index === 0) return 'text-minecraft-gold';
+    if (index === 1) return 'text-minecraft-iron';
+    if (index === 2) return 'text-minecraft-wood';
     return 'text-gray-300';
   };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Leaderboard</h2>
+      <h2 className="text-xl font-minecraft font-bold text-white mb-4" style={{ textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>Leaderboard</h2>
 
       {deleteError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{deleteError}</p>
+        <div className="minecraft-panel p-4 bg-minecraft-redstone">
+          <p className="text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{deleteError}</p>
         </div>
       )}
 
       {editError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">{editError}</p>
+        <div className="minecraft-panel p-4 bg-minecraft-redstone">
+          <p className="text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{editError}</p>
         </div>
       )}
 
@@ -246,78 +246,78 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
         {visibleScores.map((score, index) => (
           <div
             key={score.id}
-            className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-200"
+            className="minecraft-panel bg-minecraft-wood wood-texture p-6 hover:brightness-110 transition-all duration-200"
           >
             {editingId === score.id ? (
               // Edit Mode
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-gray-900">Edit Score</h3>
+                  <h3 className="text-sm font-minecraft font-bold text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Edit Score</h3>
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleSaveEdit(score.id)}
                       disabled={saving}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="minecraft-btn flex items-center gap-2 px-4 py-2 bg-minecraft-emerald hover:brightness-110 text-white text-xs font-minecraft transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Save size={16} />
-                      {saving ? 'Saving...' : 'Save'}
+                      <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{saving ? 'Saving...' : 'Save'}</span>
                     </button>
                     <button
                       onClick={handleCancelEdit}
                       disabled={saving}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
+                      className="minecraft-btn flex items-center gap-2 px-4 py-2 bg-minecraft-stone hover:brightness-110 text-white text-xs font-minecraft transition-all duration-200 disabled:opacity-50"
                     >
                       <X size={16} />
-                      Cancel
+                      <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Cancel</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="grid gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-minecraft text-white mb-1" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
                       Player Name
                     </label>
                     <input
                       type="text"
                       value={editForm.player_name || ''}
                       onChange={(e) => setEditForm({ ...editForm, player_name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="minecraft-panel w-full px-3 py-2 bg-minecraft-obsidian text-white font-minecraft text-xs focus:ring-4 focus:ring-minecraft-diamond"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-minecraft text-white mb-1" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
                       Score
                     </label>
                     <input
                       type="number"
                       value={editForm.score || 0}
                       onChange={(e) => setEditForm({ ...editForm, score: parseInt(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="minecraft-panel w-full px-3 py-2 bg-minecraft-obsidian text-white font-minecraft text-xs focus:ring-4 focus:ring-minecraft-diamond"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-minecraft text-white mb-1" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
                       Description
                     </label>
                     <textarea
                       value={editForm.description || ''}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="minecraft-panel w-full px-3 py-2 bg-minecraft-obsidian text-white font-minecraft text-xs focus:ring-4 focus:ring-minecraft-diamond"
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
                       Metadata                    </label>
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="minecraft-panel p-3 bg-minecraft-dirt wood-texture">
                       {Object.entries(editForm.metadata || {}).length > 0 ? (
                         <div className="grid grid-cols-2 gap-2">
                           {Object.entries(editForm.metadata || {}).map(([key, value]) => (
-                            <div key={key} className="text-sm">
+                            <div key={key} className="text-xs font-minecraft text-white" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>
                               <span className="text-gray-500 font-medium">{key}:</span>{' '}
                               <span className="text-gray-700">{String(value)}</span>
                             </div>
@@ -342,19 +342,19 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <h3 className="text-lg font-bold text-gray-900">{score.player_name}</h3>
+                      <User className="w-4 h-4 text-white" />
+                      <h3 className="text-sm md:text-base font-minecraft font-bold text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{score.player_name}</h3>
                     </div>
 
                     <div className="flex items-start gap-3">
                       <div className="text-right">
-                        <div className="text-3xl font-bold text-blue-600">{score.score.toLocaleString()}</div>
-                        <div className="text-xs text-gray-500">points</div>
+                        <div className="text-2xl font-minecraft font-bold text-minecraft-gold" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{score.score.toLocaleString()}</div>
+                        <div className="text-xs font-minecraft text-white" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>points</div>
                       </div>
                       {score.html_code && (
                         <button
                           onClick={() => handleViewResult(score)}
-                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                          className="minecraft-btn p-2 bg-minecraft-lapis hover:brightness-110 text-white transition-all duration-200"
                           title="View Result"
                         >
                           <Eye size={18} />
@@ -362,7 +362,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                       )}
                       <button
                         onClick={() => handleEdit(score)}
-                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                        className="minecraft-btn p-2 bg-minecraft-diamond hover:brightness-110 text-white transition-all duration-200"
                         title="Edit score"
                       >
                         <Edit2 size={18} />
@@ -370,7 +370,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                       <button
                         onClick={() => handleDelete(score.id)}
                         disabled={deleting === score.id}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="minecraft-btn p-2 bg-minecraft-redstone hover:brightness-110 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete score"
                       >
                         <Trash2 size={18} />
@@ -382,22 +382,22 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                     <div className="mb-3">
                       <button
                         onClick={() => toggleMetadata(score.id)}
-                        className="flex items-center gap-2 w-full p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="minecraft-btn flex items-center gap-2 w-full p-3 bg-minecraft-dirt hover:brightness-110 transition-all"
                       >
-                        <span className="text-xs font-medium text-gray-600">Additional Info</span>
+                        <span className="text-xs font-minecraft text-white" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>Additional Info</span>
                         {expandedMetadata.has(score.id) ? (
-                          <ChevronUp size={14} className="text-gray-600" />
+                          <ChevronUp size={14} className="text-white" />
                         ) : (
-                          <ChevronDown size={14} className="text-gray-600" />
+                          <ChevronDown size={14} className="text-white" />
                         )}
-                        <span className="text-xs text-gray-400">({Object.keys(score.metadata).length} fields)</span>
+                        <span className="text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>({Object.keys(score.metadata).length} fields)</span>
                       </button>
                       {expandedMetadata.has(score.id) && (
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                        <div className="mt-2 minecraft-panel p-3 bg-minecraft-obsidian">
                           <div className="grid grid-cols-2 gap-2">
                             {Object.entries(score.metadata).map(([key, value]) => (
-                              <div key={key} className="text-sm">
-                                <span className="text-gray-500">{key}:</span>{' '}
+                              <div key={key} className="text-xs font-minecraft text-white" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>
+                                <span className="text-minecraft-gold">{key}:</span>{' '}
                                 <span className="text-gray-700 font-medium">{String(value)}</span>
                               </div>
                             ))}
@@ -407,21 +407,21 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-2 text-xs font-minecraft text-minecraft-gold">
                     <Calendar className="w-3 h-3" />
-                    <span>{formatDate(score.created_at)}</span>
+                    <span style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.7)' }}>{formatDate(score.created_at)}</span>
                   </div>
                 </div>
               </div>
 
                 {/* Right side - Code Preview (if viewing) */}
                 {viewingResultId === score.id && score.html_code && (
-                  <div className="flex-1 min-w-0 border-l-2 border-gray-200 pl-4">
+                  <div className="flex-1 min-w-0 minecraft-panel border-l-4 border-black pl-4 bg-minecraft-stone stone-texture">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-semibold text-gray-700">Code Preview</h4>
+                      <h4 className="text-xs font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Code Preview</h4>
                       <button
                         onClick={handleCloseResult}
-                        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+                        className="minecraft-btn p-1 bg-minecraft-redstone hover:brightness-110 text-white transition-all"
                         title="Close preview"
                       >
                         <X size={16} />
@@ -430,7 +430,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                     <iframe
                       ref={iframeRef}
                       sandbox="allow-scripts allow-same-origin"
-                      className="w-full border-2 border-gray-300 rounded-lg bg-white transition-all duration-300"
+                      className="w-full minecraft-panel bg-white transition-all duration-300"
                         style={{ minHeight: '200px', maxHeight: '800px' }}
                       title="Code Result"
                     />
