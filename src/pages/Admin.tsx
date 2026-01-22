@@ -22,21 +22,25 @@ export function Admin({ user }: AdminProps) {
       setLoading(true);
     }
     
-    const { data, error } = await supabase
-      .from('scores')
-      .select('*')
-      .order('score', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('scores')
+        .select('*')
+        .order('score', { ascending: false });
 
-    if (error) {
-      // Error fetching scores
-    } else {
-      setScores(data || []);
-    }
-    
-    if (isManualRefresh) {
-      setRefreshing(false);
-    } else {
-      setLoading(false);
+      if (error) {
+        console.error('Error fetching scores:', error);
+      } else {
+        setScores(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch scores:', error);
+    } finally {
+      if (isManualRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -59,7 +63,7 @@ export function Admin({ user }: AdminProps) {
 
   if (showScoreInput) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-4xl" style={{ minHeight: '100vh', backgroundColor: '#FAFAD2' }}>
         <header className="text-center mb-12 minecraft-panel bg-minecraft-gold p-6 animate-float">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Trophy className="w-12 h-12 text-minecraft-obsidian diamond-glow animate-glow" />
@@ -79,12 +83,12 @@ export function Admin({ user }: AdminProps) {
   }
 
   return (
-    <div id="scores" className="container mx-auto px-4 py-8 max-w-4xl">
+    <div id="scores" className="container mx-auto px-4 py-8 max-w-4xl" style={{ minHeight: '100vh', backgroundColor: '#FAFAD2' }}>
       <header className="text-center mb-12 minecraft-panel bg-minecraft-gold p-6 animate-float">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Trophy className="w-12 h-12 text-minecraft-obsidian diamond-glow animate-glow" />
           <h1 className="text-2xl md:text-3xl font-minecraft font-bold text-minecraft-obsidian" style={{ textShadow: '3px 3px 0 rgba(255,255,255,0.5)' }}>Leaderboard</h1>
         </div>
+
         <div className="flex items-center justify-center gap-4">
           <button
             onClick={() => setShowScoreInput(true)}

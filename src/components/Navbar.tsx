@@ -78,7 +78,7 @@ export function Navbar({ userName, questions = [], onRefresh, onLogout }: Navbar
     <nav className="minecraft-panel bg-minecraft-wood wood-texture sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2 animate-float">
+          <div className="flex items-center gap-2">
             
             <span className="text-xl font-minecraft font-bold text-white" style={{ textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>Pixel Perfect</span>
           </div>

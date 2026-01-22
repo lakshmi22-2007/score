@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { SignIn } from './components/SignIn';
 import { Home } from './pages/Home';
@@ -15,21 +15,53 @@ interface Question {
   csscode: string;
 }
 
-function App() {
+function AppContent() {
+  const location = useLocation();
   const [user, setUser] = useState<{ name: string; college: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+
+  const fetchCurrentQuestion = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*')
+        .order('roundno', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching questions:', error);
+        return;
+      }
+      
+      if (data) {
+        setQuestions(data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch questions:', error);
+    }
+  };
+
+  const handleSignIn = (name: string, college: string) => {
+    const userData = { name, college };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    
+
     // Fetch the current round question
     fetchCurrentQuestion();
 
     // Set up real-time subscription for questions table
-    const channel = supabase
+    const questionsChannel = supabase
       .channel('questions-changes')
       .on(
         'postgres_changes',
@@ -48,31 +80,9 @@ function App() {
 
     // Cleanup subscription on unmount
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(questionsChannel);
     };
   }, []);
-
-  const fetchCurrentQuestion = async () => {
-    const { data, error } = await supabase
-      .from('questions')
-      .select('*')
-      .order('roundno', { ascending: true });
-    
-    if (data && !error) {
-      setQuestions(data);
-    }
-  };
-
-  const handleSignIn = (name: string, college: string) => {
-    const userData = { name, college };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
 
   const isAdmin = user && ADMIN_USERS.includes(user.name);
 
@@ -81,20 +91,26 @@ function App() {
   }
 
   return (
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAD2' }}>
+      <Navbar 
+        userName={user.name}
+        questions={questions}
+        onRefresh={fetchCurrentQuestion}
+        onLogout={handleLogout}
+      />
+      
+      <Routes>
+        <Route path="/" element={<Home user={user} />} />
+        <Route path="/admin" element={isAdmin ? <Admin user={user} /> : <Navigate to="/" replace />} />
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-        <Navbar 
-          userName={user.name}
-          questions={questions}
-          onRefresh={fetchCurrentQuestion}
-          onLogout={handleLogout}
-        />
-        
-        <Routes>
-          <Route path="/" element={<Home user={user} />} />
-          <Route path="/admin" element={isAdmin ? <Admin user={user} /> : <Navigate to="/" replace />} />
-        </Routes>
-      </div>
+      <AppContent />
     </Router>
   );
 }

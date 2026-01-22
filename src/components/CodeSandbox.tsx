@@ -226,10 +226,10 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         throw new Error('Invalid score from AI');
       }
 
-      // Save to database with AI score
-      const { data: insertedData, error: dbError } = await supabase
+      // Use upsert - will update if player_name exists, insert if not
+      const { error: dbError } = await supabase
         .from('scores')
-        .insert({
+        .upsert({
           player_name: userName || 'Anonymous',
           score: score,
           description: feedback,
@@ -244,8 +244,9 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             userCollege: userCollege,
             timestamp: new Date().toISOString(),
           },
-        })
-        .select();
+        }, {
+          onConflict: 'player_name'
+        });
 
       if (dbError) {
         throw new Error(`Database error: ${dbError.message}`);
@@ -331,9 +332,10 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         throw new Error('Invalid score from AI');
       }
 
-      const { data: insertedData, error: dbError } = await supabase
+      // Use upsert - will update if player_name exists, insert if not
+      const { error: dbError } = await supabase
         .from('scores')
-        .insert({
+        .upsert({
           player_name: userName || 'Anonymous',
           score: score,
           description: feedback,
@@ -348,8 +350,9 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             userCollege: userCollege,
             timestamp: new Date().toISOString(),
           },
-        })
-        .select();
+        }, {
+          onConflict: 'player_name'
+        });
 
       if (dbError) {
         throw new Error(`Database error: ${dbError.message}`);
@@ -409,7 +412,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 minecraft-panel bg-minecraft-obsidian">
+          <div className="p-4 minecraft-panel" style={{ backgroundColor: '#1e1e1e' }}>
             <label className="block text-xs font-minecraft text-minecraft-diamond mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>HTML</label>
             <Editor
               height="350px"
@@ -429,7 +432,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
               }}
             />
           </div>
-          <div className="p-4 minecraft-panel bg-minecraft-obsidian">
+          <div className="p-4 minecraft-panel" style={{ backgroundColor: '#1e1e1e' }}>
             <label className="block text-xs font-minecraft text-minecraft-emerald mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>CSS</label>
             <Editor
               height="350px"

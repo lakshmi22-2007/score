@@ -17,7 +17,7 @@ export function SignIn({ onSignIn }: SignInProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-900 via-amber-800 to-yellow-900 flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#FAFAD2' }}>
       <div className="minecraft-panel bg-minecraft-wood wood-texture p-8 w-full max-w-md animate-float">
         <div className="text-center mb-8">
           <h1 className="text-2xl md:text-3xl font-minecraft font-bold text-white mb-2" style={{ textShadow: '4px 4px 0 rgba(0,0,0,0.7)' }}>Pixel Perfect</h1>

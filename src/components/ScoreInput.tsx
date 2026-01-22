@@ -93,7 +93,7 @@ export function ScoreInput({ onScoreAdded, userName, userCollege }: ScoreInputPr
           description,
           name: userName,
           college: userCollege,
-          metadata: { ...metadata, ...other },
+          metadata: metadata,
         });
 
       if (dbError) throw dbError;
