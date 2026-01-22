@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Play, Save, Send, Sparkles } from 'lucide-react';
+import { Upload, Play, Save, Send, Sparkles, Palette } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
 //
@@ -18,6 +18,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
   const [showNotification, setShowNotification] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [editorTheme, setEditorTheme] = useState<'vs-dark' | 'light'>('vs-dark');
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Load saved code on mount
@@ -411,15 +412,27 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           </div>
         </div>
         
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setEditorTheme(prev => prev === 'vs-dark' ? 'light' : 'vs-dark')}
+            className="minecraft-btn bg-minecraft-lapis hover:brightness-110 text-white font-minecraft text-xs py-2 px-4 transition-all duration-200 flex items-center gap-2"
+          >
+            <Palette size={16} />
+            <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
+              {editorTheme === 'vs-dark' ? 'Dark' : 'Light'}
+            </span>
+          </button>
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 minecraft-panel" style={{ backgroundColor: '#1e1e1e' }}>
-            <label className="block text-xs font-minecraft text-minecraft-diamond mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>HTML</label>
+          <div className="p-4 minecraft-panel" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff' }}>
+            <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? '#5db9ff' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>HTML</label>
             <Editor
               height="350px"
               defaultLanguage="html"
               value={html}
               onChange={(value) => setHtml(value || '')}
-              theme="vs-dark"
+              theme={editorTheme}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
@@ -432,14 +445,14 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
               }}
             />
           </div>
-          <div className="p-4 minecraft-panel" style={{ backgroundColor: '#1e1e1e' }}>
-            <label className="block text-xs font-minecraft text-minecraft-emerald mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.8)' }}>CSS</label>
+          <div className="p-4 minecraft-panel" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff' }}>
+            <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? '#50fa7b' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>CSS</label>
             <Editor
               height="350px"
               defaultLanguage="css"
               value={css}
               onChange={(value) => setCss(value || '')}
-              theme="vs-dark"
+              theme={editorTheme}
               options={{
                 minimap: { enabled: false },
                 fontSize: 14,
