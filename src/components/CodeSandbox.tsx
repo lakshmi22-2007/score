@@ -1,25 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
-import { Upload, Play, Save, Send, Sparkles, Palette } from 'lucide-react';
+import { Upload, Play, Save, Sparkles, Palette, Maximize, Minimize } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
 //
 interface CodeSandboxProps {
   userName?: string;
   userCollege?: string;
+  question?: {
+    id: string;
+    roundno: number;
+    htmlcode: string;
+    csscode: string;
+  };
 }
 //
-export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
+export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProps) {
   const [html, setHtml] = useState('<!-- Type your HTML code here -->');
   const [css, setCss] = useState('/* Type your CSS code here */');
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
-  const [scoring, setScoring] = useState(false);
-  const [scoreMessage, setScoreMessage] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [editorTheme, setEditorTheme] = useState<'vs-dark' | 'light'>('vs-dark');
+  const [expandedEditor, setExpandedEditor] = useState<'html' | 'css' | null>(null);
+  const [showExpandDialog, setShowExpandDialog] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const expandedIframeRef = useRef<HTMLIFrameElement>(null);
 
   // Load saved code on mount
   useEffect(() => {
@@ -27,6 +34,15 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
       loadSavedCode();
     }
   }, [userName]);
+
+  // Auto-update preview when code changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      runCode();
+    }, 500); // Debounce for 500ms
+    
+    return () => clearTimeout(timer);
+  }, [html, css]);
 
   const loadSavedCode = async () => {
     try {
@@ -43,7 +59,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         setCss(data.css_code || '/* Type your CSS code here */');
       }
     } catch (error) {
-      console.log('No saved code found');
+      // No saved code found, continue with defaults
     }
   };
 
@@ -94,7 +110,6 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
       setTimeout(() => setSaveMessage(''), 3000);
     } catch (error: any) {
       setSaveMessage(`Error: ${error.message}`);
-      console.error('Save error:', error);
     } finally {
       setSaving(false);
     }
@@ -121,16 +136,13 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
     const iframe = iframeRef.current;
     if (!iframe) return;
 
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
-
     const content = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <style>
     body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
-    ${css || ''}
+    ${css ? css : '/* No CSS styles */'}
   </style>
 </head>
 <body>
@@ -138,32 +150,49 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
 </body>
 </html>`;
 
-    iframeDoc.open();
-    iframeDoc.write(content);
-    iframeDoc.close();
-
-    setTimeout(() => {
-      const body = iframeDoc.body;
-      const scrollHeight = body.scrollHeight;
-      if (iframe && scrollHeight > 0) {
-        iframe.style.height = Math.max(400, scrollHeight + 40) + 'px';
-      }
-    }, 100);
+    iframe.srcdoc = content;
   };
 
-  const clearOutput = () => {
-    const iframe = iframeRef.current;
+  const runExpandedCode = () => {
+    const iframe = expandedIframeRef.current;
     if (!iframe) return;
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) return;
-    iframeDoc.open();
-    iframeDoc.write('<!DOCTYPE html><html><body></body></html>');
-    iframeDoc.close();
+
+    const content = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { margin: 0; padding: 16px; font-family: system-ui, -apple-system, sans-serif; }
+    ${css ? css : '/* No CSS styles */'}
+  </style>
+</head>
+<body>
+  ${html || '<p style="color: #999;">No HTML content</p>'}
+</body>
+</html>`;
+
+    iframe.srcdoc = content;
+  };
+
+  const handleExpand = (editor: 'html' | 'css') => {
+    setExpandedEditor(editor);
+    setShowExpandDialog(true);
+    setTimeout(() => runExpandedCode(), 100);
+  };
+
+  const handleCloseDialog = () => {
+    setShowExpandDialog(false);
+    setExpandedEditor(null);
   };
 
   const submitCode = async () => {
     setSubmitting(true);
     setSubmitMessage('');
+
+    // Auto-save code before submitting
+    if (userName) {
+      await saveCode();
+    }
 
     try {
       const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
@@ -174,9 +203,30 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         return;
       }
 
-      const combinedCode = `HTML:\n${html}\n\nCSS:\n${css}`;
+      if (!question || !question.htmlcode) {
+        setSubmitMessage('Question data not available - roundno 2001 not found or missing htmlcode');
+        setSubmitting(false);
+        return;
+      }
 
-      // Get AI score
+      const expectedCode = `HTML:\n${question.htmlcode}\n\nCSS:\n${question.csscode || '/* No CSS required */'}`;
+      const userCode = `HTML:\n${html}\n\nCSS:\n${css}`;
+
+      console.log('=== EXPECTED CODE (from question 2001) ===');
+      console.log(expectedCode);
+      console.log('=== USER SUBMITTED CODE ===');
+      console.log(userCode);
+
+      const systemPrompt = 'You are an expert web development judge. Compare the user\'s HTML/CSS code with the expected solution and provide a precise, natural integer score from 0-100. DO NOT round to multiples of 10 or 20. Use natural scores like 87, 63, 54, 91, etc. Evaluate: 1) HTML tag correctness and hierarchy (40%): exact tags, nesting, semantic structure. 2) CSS selector accuracy and property values (35%): correct selectors, property names, values. 3) Visual output similarity (20%): rendering matches expected. 4) Code approach (5%): efficient implementation. Allow minor differences if visually equivalent. Return ONLY strict JSON: {"score": <integer 0-100>, "feedback": "<1-2 sentences explaining match quality or differences>"}';
+      
+      const userPrompt = `Compare these codes precisely and provide a natural integer score (not rounded to multiples).\n\nEXPECTED CODE:\n${expectedCode}\n\nUSER SUBMITTED CODE:\n${userCode}`;
+
+      console.log('=== API SYSTEM PROMPT ===');
+      console.log(systemPrompt);
+      console.log('=== API USER PROMPT ===');
+      console.log(userPrompt);
+
+      // Get AI similarity score
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -188,15 +238,15 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           messages: [
             {
               role: 'system',
-              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<1-2 sentence brief evaluation>"}'
+              content: systemPrompt
             },
             {
               role: 'user',
-              content: `Evaluate this code and provide a creativity score out of 100:\n\n${combinedCode}`
+              content: userPrompt
             }
           ],
-          temperature: 0.7,
-          max_tokens: 150,
+          temperature: 0.3,
+          max_tokens: 200,
         }),
       });
 
@@ -220,17 +270,17 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         throw new Error('Could not parse AI response');
       }
       
-      const score = Math.round(result.score);
+      const score = Math.floor(result.score);
       const feedback = result.feedback || 'Creative code!';
 
       if (isNaN(score) || score < 0 || score > 100) {
         throw new Error('Invalid score from AI');
       }
 
-      // Use upsert - will update if player_name exists, insert if not
+      // Insert new score (allows multiple submissions per user)
       const { error: dbError } = await supabase
         .from('scores')
-        .upsert({
+        .insert({
           player_name: userName || 'Anonymous',
           score: score,
           description: feedback,
@@ -245,8 +295,6 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             userCollege: userCollege,
             timestamp: new Date().toISOString(),
           },
-        }, {
-          onConflict: 'player_name'
         });
 
       if (dbError) {
@@ -262,114 +310,8 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
     } catch (error: any) {
       const errorMsg = error.message || 'Unknown error occurred';
       setSubmitMessage(`Error: ${errorMsg}`);
-      console.error('Submission error:', error);
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const scoreWithAI = async () => {
-    setScoring(true);
-    setScoreMessage('');
-
-    try {
-      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-      
-      if (!groqApiKey || groqApiKey === 'your_groq_api_key_here') {
-        setScoreMessage('Please configure GROQ API key in .env file');
-        setScoring(false);
-        return;
-      }
-
-      const combinedCode = `HTML:\n${html}\n\nCSS:\n${css}`;
-
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${groqApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert web development judge. Evaluate HTML/CSS code based on: creativity (35%), design aesthetics (25%), code quality (10%), responsiveness potential (15%), and innovation (15%). Return ONLY a JSON object with format: {"score": <number 0-100>, "feedback": "<1-2 sentence brief evaluation>"}'
-            },
-            {
-              role: 'user',
-              content: `Evaluate this code and provide a creativity score out of 100:\n\n${combinedCode}`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 150,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to get AI score');
-      }
-
-      const data = await response.json();
-      const aiResponse = data.choices[0].message.content;
-      
-      // More flexible JSON extraction
-      let result;
-      try {
-        const jsonMatch = aiResponse.match(/\{[\s\S]*?\}/);
-        if (!jsonMatch) {
-          throw new Error('Invalid AI response format');
-        }
-        result = JSON.parse(jsonMatch[0]);
-      } catch (parseError) {
-        throw new Error('Could not parse AI response');
-      }
-      
-      const score = Math.round(result.score);
-      const feedback = result.feedback || 'Creative code!';
-
-      if (isNaN(score) || score < 0 || score > 100) {
-        throw new Error('Invalid score from AI');
-      }
-
-      // Use upsert - will update if player_name exists, insert if not
-      const { error: dbError } = await supabase
-        .from('scores')
-        .upsert({
-          player_name: userName || 'Anonymous',
-          score: score,
-          description: feedback,
-          html_code: html,
-          css_code: css,
-          metadata: {
-            html_length: html.length,
-            css_length: css.length,
-            scored_by: 'AI',
-            feedback: feedback,
-            userName: userName,
-            userCollege: userCollege,
-            timestamp: new Date().toISOString(),
-          },
-        }, {
-          onConflict: 'player_name'
-        });
-
-      if (dbError) {
-        throw new Error(`Database error: ${dbError.message}`);
-      }
-
-      setScoreMessage('✅ Submitted successfully!');
-      setShowNotification(true);
-      setTimeout(() => {
-        setScoreMessage('');
-        setShowNotification(false);
-      }, 5000);
-    } catch (error: any) {
-      const errorMsg = error.message || 'Unknown error occurred';
-      setScoreMessage(`Error: ${errorMsg}`);
-      console.error('AI Scoring error:', error);
-      setScoring(false);
     }
   };
 
@@ -426,7 +368,16 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="p-4 minecraft-panel" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff' }}>
-            <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? '#5db9ff' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>HTML</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-minecraft" style={{ color: editorTheme === 'vs-dark' ? '#5db9ff' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>HTML</label>
+              <button
+                onClick={() => handleExpand('html')}
+                className="minecraft-btn bg-minecraft-emerald hover:brightness-110 text-white font-minecraft text-xs py-1 px-2 transition-all duration-200 flex items-center justify-center"
+                title="Expand HTML Editor"
+              >
+                <Maximize size={18} />
+              </button>
+            </div>
             <Editor
               height="350px"
               defaultLanguage="html"
@@ -446,7 +397,16 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
             />
           </div>
           <div className="p-4 minecraft-panel" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff' }}>
-            <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? '#50fa7b' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>CSS</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-minecraft" style={{ color: editorTheme === 'vs-dark' ? '#50fa7b' : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>CSS</label>
+              <button
+                onClick={() => handleExpand('css')}
+                className="minecraft-btn bg-minecraft-emerald hover:brightness-110 text-white font-minecraft text-xs py-1 px-2 transition-all duration-200 flex items-center justify-center"
+                title="Expand CSS Editor"
+              >
+                <Maximize size={18} />
+              </button>
+            </div>
             <Editor
               height="350px"
               defaultLanguage="css"
@@ -467,6 +427,96 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           </div>
         </div>
 
+        {/* Expanded Editor Modal Dialog */}
+        {showExpandDialog && expandedEditor && (
+          <div 
+            className="fixed inset-0 flex items-center justify-center p-4" 
+            style={{ 
+              zIndex: 9999, 
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(4px)'
+            }} 
+            onClick={handleCloseDialog}
+          >
+            <div 
+              className="minecraft-panel bg-minecraft-stone stone-texture w-full max-w-7xl p-6 relative overflow-hidden" 
+              style={{ 
+                maxHeight: '90vh',
+                boxShadow: '0 0 40px rgba(0,0,0,0.8)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-minecraft text-white" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
+                  {expandedEditor === 'html' ? 'HTML Editor' : 'CSS Editor'} - Expanded View
+                </h3>
+                <button
+                  onClick={handleCloseDialog}
+                  className="minecraft-btn bg-minecraft-redstone hover:brightness-110 text-white font-minecraft text-xs p-2 transition-all duration-200"
+                >
+                  <Minimize size={16} />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ height: 'calc(90vh - 100px)' }}>
+                <div className="p-4 minecraft-panel overflow-hidden flex flex-col" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff', height: '100%' }}>
+                  <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? (expandedEditor === 'html' ? '#5db9ff' : '#50fa7b') : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>
+                    {expandedEditor === 'html' ? 'HTML' : 'CSS'}
+                  </label>
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <Editor
+                      height="100%"
+                    defaultLanguage={expandedEditor}
+                    value={expandedEditor === 'html' ? html : css}
+                    onChange={(value) => {
+                      if (expandedEditor === 'html') {
+                        setHtml(value || '');
+                      } else {
+                        setCss(value || '');
+                      }
+                      setTimeout(() => runExpandedCode(), 100);
+                    }}
+                    theme={editorTheme}
+                    options={{
+                      minimap: { enabled: true },
+                      fontSize: 14,
+                      lineNumbers: 'on',
+                      roundedSelection: false,
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                      wordWrap: 'on'
+                    }}
+                  />
+                  </div>
+                </div>
+                
+                <div className="p-4 minecraft-panel flex flex-col h-full" style={{ backgroundColor: '#f5f5f5' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-minecraft text-minecraft-stone" style={{ textShadow: '1px 1px 0 rgba(255,255,255,0.5)' }}>
+                      Live Preview
+                    </label>
+                    <button
+                      onClick={runExpandedCode}
+                      className="minecraft-btn bg-minecraft-lapis hover:brightness-110 text-white font-minecraft text-xs py-1 px-3 transition-all duration-200 flex items-center gap-2"
+                    >
+                      <Play size={16} />
+                      <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Run</span>
+                    </button>
+                  </div>
+                  <iframe 
+                    ref={expandedIframeRef} 
+                    sandbox="allow-scripts" 
+                    className="w-full minecraft-panel bg-white" 
+                    style={{ flex: 1, minHeight: 0 }}
+                    title="Expanded Code Output"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4 mb-6">
           <button onClick={runCode} className="minecraft-btn bg-minecraft-grass grass-texture hover:brightness-110 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2">
             <Play size={20} />
@@ -475,7 +525,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
           <button 
             onClick={saveCode} 
             disabled={saving}
-            className="minecraft-btn bg-minecraft-lapis hover:brightness-110 disabled:bg-gray-600 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2"
+            className="minecraft-btn bg-minecraft-diamond hover:brightness-110 disabled:opacity-50 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2"
           >
             <Save size={20} />
             <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>{saving ? 'Saving...' : 'Save'}</span>
@@ -489,7 +539,7 @@ export function CodeSandbox({ userName, userCollege }: CodeSandboxProps) {
 
         <div>
           <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Output</label>
-          <iframe ref={iframeRef} sandbox="allow-scripts allow-same-origin" className="w-full min-h-96 minecraft-panel bg-white" title="Code Output" style={{ height: '400px' }} />
+          <iframe ref={iframeRef} sandbox="allow-scripts" className="w-full min-h-96 minecraft-panel bg-white" title="Code Output" style={{ height: '400px' }} />
         </div>
 
         <div className="mt-6">

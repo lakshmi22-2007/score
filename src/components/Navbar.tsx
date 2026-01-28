@@ -4,7 +4,7 @@ import logo from '../assets/logo.svg';
 
 interface Question {
   id: string;
-  roundno: string;
+  roundno: number;
   htmlcode: string;
   csscode: string;
 }
@@ -22,13 +22,15 @@ export function Navbar({ userName, questions = [], onRefresh, onLogout }: Navbar
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const iframeRefs = useRef<{ [key: string]: HTMLIFrameElement | null }>({});
 
+  // Filter questions where roundno <= 1000
+  const visibleQuestions = questions.filter(q => {
+    return q.roundno <= 1000;
+  });
+
   useEffect(() => {
     if (selectedQuestion) {
       const iframe = iframeRefs.current[selectedQuestion.id];
       if (!iframe) return;
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) return;
 
       const content = `<!DOCTYPE html>
 <html>
@@ -60,9 +62,7 @@ export function Navbar({ userName, questions = [], onRefresh, onLogout }: Navbar
 </body>
 </html>`;
 
-      iframeDoc.open();
-      iframeDoc.write(content);
-      iframeDoc.close();
+      iframe.srcdoc = content;
     }
   }, [selectedQuestion]);
 
@@ -119,9 +119,9 @@ export function Navbar({ userName, questions = [], onRefresh, onLogout }: Navbar
                       </button>
                     </div>
                     
-                    {questions.length > 0 ? (
+                    {visibleQuestions.length > 0 ? (
                       <div className="overflow-y-auto overflow-x-hidden p-4 space-y-4 bg-gradient-to-b from-amber-950/40 to-amber-950/60 custom-scrollbar flex-1">
-                        {questions.map((question, index) => (
+                        {visibleQuestions.map((question, index) => (
                           <div
                             key={question.id}
                             className="animate-fade-in-up"
@@ -176,7 +176,7 @@ export function Navbar({ userName, questions = [], onRefresh, onLogout }: Navbar
                                     </div>
                                     <iframe
                                       ref={(el) => iframeRefs.current[question.id] = el}
-                                      sandbox="allow-scripts allow-same-origin"
+                                      sandbox="allow-scripts"
                                       className="w-full h-96 bg-white border-0"
                                       style={{ display: 'block' }}
                                       title={`Round ${question.roundno} Preview`}

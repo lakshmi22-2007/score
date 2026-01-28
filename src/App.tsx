@@ -10,7 +10,7 @@ const ADMIN_USERS = ['ADMINDEv', 'ADMINLAKSHMi', 'ADMINcit'];
 
 interface Question {
   id: string;
-  roundno: string;
+  roundno: number;
   htmlcode: string;
   csscode: string;
 }
@@ -86,6 +86,9 @@ function AppContent() {
 
   const isAdmin = user && ADMIN_USERS.includes(user.name);
 
+  // Get the question with roundno = 2001
+  const activeQuestion = questions.find(q => q.roundno === 2001);
+
   if (!user) {
     return <SignIn onSignIn={handleSignIn} />;
   }
@@ -100,7 +103,7 @@ function AppContent() {
       />
       
       <Routes>
-        <Route path="/" element={<Home user={user} />} />
+        <Route path="/" element={<Home user={user} question={activeQuestion} />} />
         <Route path="/admin" element={isAdmin ? <Admin user={user} /> : <Navigate to="/" replace />} />
       </Routes>
     </div>

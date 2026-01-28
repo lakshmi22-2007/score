@@ -1,3 +1,4 @@
+# Logs
 logs
 *.log
 npm-debug.log*
@@ -6,18 +7,65 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
 dist
 dist-ssr
+build
 *.local
 
+# Cache & temporary files
+.vite
+.turbo
+.cache
+*.tmp
+*.temp
+.bolt
+
+# IDE & Editor files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment variables (SENSITIVE - NEVER COMMIT)
 .env
+.env.local
+.env.production
+.env.development
+.env.*.local
+*.env
+
+# Test coverage
+coverage
+*.coverage
+.nyc_output
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+supabase/.branches
+supabase/.temp
+
+# Misc
+*.bak
+*.backup
+.vercel
+.netlify

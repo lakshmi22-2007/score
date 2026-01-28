@@ -135,9 +135,6 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
       const iframe = iframeRef.current;
       if (!iframe || !score.html_code) return;
 
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) return;
-
       const content = `<!DOCTYPE html>
 <html>
 <head>
@@ -152,25 +149,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
 </body>
 </html>`;
 
-      iframeDoc.open();
-      iframeDoc.write(content);
-      iframeDoc.close();
-
-      // Adjust iframe height based on content
-      setTimeout(() => {
-        const body = iframeDoc.body;
-        const html = iframeDoc.documentElement;
-        const height = Math.max(
-          body.scrollHeight,
-          body.offsetHeight,
-          html.clientHeight,
-          html.scrollHeight,
-          html.offsetHeight
-        );
-        if (iframe && height > 0) {
-          iframe.style.height = Math.min(Math.max(200, height + 40), 800) + 'px';
-        }
-      }, 100);
+      iframe.srcdoc = content;
     }, 100);
   };
 
@@ -429,7 +408,7 @@ export function ScoreDisplay({ scores, loading, onScoreDeleted }: ScoreDisplayPr
                     </div>
                     <iframe
                       ref={iframeRef}
-                      sandbox="allow-scripts allow-same-origin"
+                      sandbox="allow-scripts"
                       className="w-full minecraft-panel bg-white transition-all duration-300"
                         style={{ minHeight: '200px', maxHeight: '800px' }}
                       title="Code Result"
