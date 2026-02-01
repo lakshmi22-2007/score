@@ -40,7 +40,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
     const timer = setTimeout(() => {
       runCode();
     }, 500); // Debounce for 500ms
-    
+
     return () => clearTimeout(timer);
   }, [html, css]);
 
@@ -121,7 +121,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
       reader.onload = (e) => {
         const content = e.target?.result as string;
         const fileName = file.name.toLowerCase();
-        
+
         if (fileName.endsWith('.html')) {
           setHtml(content);
         } else if (fileName.endsWith('.css')) {
@@ -195,13 +195,24 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
     }
 
     try {
-      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
-      
-      if (!groqApiKey || groqApiKey === 'your_groq_api_key_here') {
-        setSubmitMessage('Please configure GROQ API key in .env file');
+      // Load Balancer: Rotate between 3 API keys
+      const apiKeys = [
+        import.meta.env.VITE_GROQ_API_KEY_1,
+        import.meta.env.VITE_GROQ_API_KEY_2,
+        import.meta.env.VITE_GROQ_API_KEY_3,
+      ].filter(Boolean); // Remove undefined keys
+
+      if (apiKeys.length === 0) {
+        setSubmitMessage('Please configure GROQ API keys in .env file');
         setSubmitting(false);
         return;
       }
+
+      // Round-robin: Use current timestamp to select key
+      const keyIndex = Math.floor(Date.now() / 1000) % apiKeys.length;
+      const groqApiKey = apiKeys[keyIndex];
+
+      console.log(`Using API key ${keyIndex + 1} of ${apiKeys.length}`);
 
       if (!question || !question.htmlcode) {
         setSubmitMessage('Question data not available - roundno 2001 not found or missing htmlcode');
@@ -218,7 +229,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
       console.log(userCode);
 
       const systemPrompt = 'You are an expert web development judge. Compare the user\'s HTML/CSS code with the expected solution and provide a precise, natural integer score from 0-100. DO NOT round to multiples of 10 or 20. Use natural scores like 87, 63, 54, 91, etc. Evaluate: 1) HTML tag correctness and hierarchy (40%): exact tags, nesting, semantic structure. 2) CSS selector accuracy and property values (35%): correct selectors, property names, values. 3) Visual output similarity (20%): rendering matches expected. 4) Code approach (5%): efficient implementation. Allow minor differences if visually equivalent. Return ONLY strict JSON: {"score": <integer 0-100>, "feedback": "<1-2 sentences explaining match quality or differences>"}';
-      
+
       const userPrompt = `Compare these codes precisely and provide a natural integer score (not rounded to multiples).\n\nEXPECTED CODE:\n${expectedCode}\n\nUSER SUBMITTED CODE:\n${userCode}`;
 
       console.log('=== API SYSTEM PROMPT ===');
@@ -257,7 +268,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
 
       const data = await response.json();
       const aiResponse = data.choices[0].message.content;
-      
+
       // Extract JSON
       let result;
       try {
@@ -269,7 +280,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
       } catch (parseError) {
         throw new Error('Could not parse AI response');
       }
-      
+
       const score = Math.floor(result.score);
       const feedback = result.feedback || 'Creative code!';
 
@@ -335,7 +346,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
 
       <div className="minecraft-panel bg-minecraft-stone stone-texture p-6 mb-8">
         <h2 className="text-xl font-minecraft font-bold text-white mb-6" style={{ textShadow: '3px 3px 0 rgba(0,0,0,0.7)' }}>Crafting Bench</h2>
-        
+
         <div className="mb-6 p-4 minecraft-panel bg-minecraft-dirt wood-texture">
           <div className="flex items-center gap-2 mb-3">
             <Upload className="w-5 h-5 text-white" />
@@ -353,7 +364,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
             <p className="text-xs font-minecraft text-minecraft-gold" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Upload All Files!</p>
           </div>
         </div>
-        
+
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => setEditorTheme(prev => prev === 'vs-dark' ? 'light' : 'vs-dark')}
@@ -365,7 +376,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
             </span>
           </button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="p-4 minecraft-panel" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff' }}>
             <div className="flex items-center justify-between mb-2">
@@ -429,18 +440,18 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
 
         {/* Expanded Editor Modal Dialog */}
         {showExpandDialog && expandedEditor && (
-          <div 
-            className="fixed inset-0 flex items-center justify-center p-4" 
-            style={{ 
-              zIndex: 9999, 
+          <div
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{
+              zIndex: 9999,
               backgroundColor: 'rgba(0, 0, 0, 0.85)',
               backdropFilter: 'blur(4px)'
-            }} 
+            }}
             onClick={handleCloseDialog}
           >
-            <div 
-              className="minecraft-panel bg-minecraft-stone stone-texture w-full max-w-7xl p-6 relative overflow-hidden" 
-              style={{ 
+            <div
+              className="minecraft-panel bg-minecraft-stone stone-texture w-full max-w-7xl p-6 relative overflow-hidden"
+              style={{
                 maxHeight: '90vh',
                 boxShadow: '0 0 40px rgba(0,0,0,0.8)'
               }}
@@ -457,7 +468,7 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
                   <Minimize size={16} />
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ height: 'calc(90vh - 100px)' }}>
                 <div className="p-4 minecraft-panel overflow-hidden flex flex-col" style={{ backgroundColor: editorTheme === 'vs-dark' ? '#1e1e1e' : '#ffffff', height: '100%' }}>
                   <label className="block text-xs font-minecraft mb-2" style={{ color: editorTheme === 'vs-dark' ? (expandedEditor === 'html' ? '#5db9ff' : '#50fa7b') : '#1e1e1e', textShadow: editorTheme === 'vs-dark' ? '2px 2px 0 rgba(0,0,0,0.8)' : 'none' }}>
@@ -466,31 +477,31 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
                   <div style={{ flex: 1, minHeight: 0 }}>
                     <Editor
                       height="100%"
-                    defaultLanguage={expandedEditor}
-                    value={expandedEditor === 'html' ? html : css}
-                    onChange={(value) => {
-                      if (expandedEditor === 'html') {
-                        setHtml(value || '');
-                      } else {
-                        setCss(value || '');
-                      }
-                      setTimeout(() => runExpandedCode(), 100);
-                    }}
-                    theme={editorTheme}
-                    options={{
-                      minimap: { enabled: true },
-                      fontSize: 14,
-                      lineNumbers: 'on',
-                      roundedSelection: false,
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      tabSize: 2,
-                      wordWrap: 'on'
-                    }}
-                  />
+                      defaultLanguage={expandedEditor}
+                      value={expandedEditor === 'html' ? html : css}
+                      onChange={(value) => {
+                        if (expandedEditor === 'html') {
+                          setHtml(value || '');
+                        } else {
+                          setCss(value || '');
+                        }
+                        setTimeout(() => runExpandedCode(), 100);
+                      }}
+                      theme={editorTheme}
+                      options={{
+                        minimap: { enabled: true },
+                        fontSize: 14,
+                        lineNumbers: 'on',
+                        roundedSelection: false,
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        tabSize: 2,
+                        wordWrap: 'on'
+                      }}
+                    />
                   </div>
                 </div>
-                
+
                 <div className="p-4 minecraft-panel flex flex-col h-full" style={{ backgroundColor: '#f5f5f5' }}>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-xs font-minecraft text-minecraft-stone" style={{ textShadow: '1px 1px 0 rgba(255,255,255,0.5)' }}>
@@ -504,10 +515,10 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
                       <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Run</span>
                     </button>
                   </div>
-                  <iframe 
-                    ref={expandedIframeRef} 
-                    sandbox="allow-scripts" 
-                    className="w-full minecraft-panel bg-white" 
+                  <iframe
+                    ref={expandedIframeRef}
+                    sandbox="allow-scripts"
+                    className="w-full minecraft-panel bg-white"
                     style={{ flex: 1, minHeight: 0 }}
                     title="Expanded Code Output"
                   />
@@ -522,8 +533,8 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
             <Play size={20} />
             <span style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>Run</span>
           </button>
-          <button 
-            onClick={saveCode} 
+          <button
+            onClick={saveCode}
             disabled={saving}
             className="minecraft-btn bg-minecraft-diamond hover:brightness-110 disabled:opacity-50 text-white font-minecraft text-xs py-3 px-6 transition-all duration-200 flex items-center justify-center gap-2"
           >
