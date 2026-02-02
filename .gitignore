@@ -69,3 +69,5 @@ supabase/.temp
 *.backup
 .vercel
 .netlify
+
+VERCEL_ENV_VARIABLES.txt

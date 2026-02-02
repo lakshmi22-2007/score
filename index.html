@@ -16,20 +16,120 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Disable right-click context menu
-      document.addEventListener('contextmenu', (e) => e.preventDefault());
+      // ========================================
+      // COMPREHENSIVE DEVELOPER TOOLS BLOCKING
+      // ========================================
       
-      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      // 1. Disable right-click context menu
+      document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        return false;
+      });
+      
+      // 2. Disable keyboard shortcuts for developer tools
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-            (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
-            (e.ctrlKey && e.key === 'U')) {
+        // F12 - Developer Tools
+        if (e.key === 'F12') {
           e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+Shift+I - Inspect Element (Windows/Linux)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Cmd+Option+I - Inspect Element (Mac)
+        if (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+Shift+J - Console (Windows/Linux)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Cmd+Option+J - Console (Mac)
+        if (e.metaKey && e.altKey && (e.key === 'J' || e.key === 'j')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+Shift+C - Inspect Element (Windows/Linux)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Cmd+Option+C - Inspect Element (Mac)
+        if (e.metaKey && e.altKey && (e.key === 'C' || e.key === 'c')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+U - View Source (Windows/Linux)
+        if (e.ctrlKey && (e.key === 'U' || e.key === 'u')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Cmd+U - View Source (Mac)
+        if (e.metaKey && (e.key === 'U' || e.key === 'u')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+S - Save Page (Windows/Linux)
+        if (e.ctrlKey && (e.key === 'S' || e.key === 's')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Cmd+S - Save Page (Mac)
+        if (e.metaKey && (e.key === 'S' || e.key === 's')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+Shift+K - Console (Firefox)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'K' || e.key === 'k')) {
+          e.preventDefault();
+          return false;
         }
       });
+      
+      // 3. Disable drag and drop
+      document.addEventListener('dragstart', (e) => e.preventDefault());
+      
+      // 4. Clear console periodically
+      setInterval(() => {
+        console.clear();
+      }, 1000);
+      
+      // 5. Detect DevTools (advanced detection)
+      (function() {
+        const devtools = /./;
+        devtools.toString = function() {
+          this.opened = true;
+        }
+        
+        setInterval(() => {
+          console.log('%c', devtools);
+          if (devtools.opened) {
+            // DevTools detected - clear and warn
+            console.clear();
+            devtools.opened = false;
+          }
+        }, 1000);
+      })();
+      
+      // 6. Disable text selection on body (optional)
+      document.body.style.userSelect = 'none';
+      document.body.style.webkitUserSelect = 'none';
+      document.body.style.msUserSelect = 'none';
     </script>
   </body>
 </html>
-  

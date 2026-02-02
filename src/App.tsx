@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { SignIn } from './components/SignIn';
 import { Home } from './pages/Home';
@@ -16,29 +16,28 @@ interface Question {
 }
 
 function AppContent() {
-  const location = useLocation();
   const [user, setUser] = useState<{ name: string; college: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  const fetchCurrentQuestion = async () => {
+  const fetchCurrentQuestion = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('questions')
         .select('*')
         .order('roundno', { ascending: true });
-      
+
       if (error) {
         console.error('Error fetching questions:', error);
         return;
       }
-      
+
       if (data) {
         setQuestions(data);
       }
     } catch (error) {
       console.error('Failed to fetch questions:', error);
     }
-  };
+  }, []);
 
   const handleSignIn = (name: string, college: string) => {
     const userData = { name, college };
@@ -48,6 +47,7 @@ function AppContent() {
 
   const handleLogout = () => {
     setUser(null);
+    setQuestions([]); // Clear questions on logout
     localStorage.removeItem('user');
   };
 
@@ -56,6 +56,11 @@ function AppContent() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  // Separate effect for fetching questions - only runs when user is authenticated
+  useEffect(() => {
+    if (!user) return;
 
     // Fetch the current round question
     fetchCurrentQuestion();
@@ -82,7 +87,7 @@ function AppContent() {
     return () => {
       supabase.removeChannel(questionsChannel);
     };
-  }, []);
+  }, [user, fetchCurrentQuestion]);
 
   const isAdmin = user && ADMIN_USERS.includes(user.name);
 
@@ -95,13 +100,13 @@ function AppContent() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAD2' }}>
-      <Navbar 
+      <Navbar
         userName={user.name}
         questions={questions}
         onRefresh={fetchCurrentQuestion}
         onLogout={handleLogout}
       />
-      
+
       <Routes>
         <Route path="/" element={<Home user={user} question={activeQuestion} />} />
         <Route path="/admin" element={isAdmin ? <Admin user={user} /> : <Navigate to="/" replace />} />

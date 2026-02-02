@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Trophy, Plus, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { ScoreInput } from '../components/ScoreInput';
@@ -15,13 +15,13 @@ export function Admin({ user }: AdminProps) {
   const [showScoreInput, setShowScoreInput] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchScores = async (isManualRefresh = false) => {
+  const fetchScores = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
       setRefreshing(true);
     } else {
       setLoading(true);
     }
-    
+
     try {
       const { data, error } = await supabase
         .from('scores')
@@ -42,19 +42,11 @@ export function Admin({ user }: AdminProps) {
         setLoading(false);
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchScores();
-    
-    // Auto-refresh every 1 minute (60 seconds)
-    const interval = setInterval(() => {
-      fetchScores();
-    }, 60000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchScores]);
 
   const handleScoreAdded = () => {
     fetchScores();

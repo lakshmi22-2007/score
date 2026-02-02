@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Upload, Play, Save, Sparkles, Palette, Maximize, Minimize } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { supabase } from '../lib/supabase';
@@ -28,23 +28,8 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const expandedIframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Load saved code on mount
-  useEffect(() => {
-    if (userName) {
-      loadSavedCode();
-    }
-  }, [userName]);
 
-  // Auto-update preview when code changes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      runCode();
-    }, 500); // Debounce for 500ms
-
-    return () => clearTimeout(timer);
-  }, [html, css]);
-
-  const loadSavedCode = async () => {
+  const loadSavedCode = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('saved_code')
@@ -61,7 +46,14 @@ export function CodeSandbox({ userName, userCollege, question }: CodeSandboxProp
     } catch (error) {
       // No saved code found, continue with defaults
     }
-  };
+  }, [userName]);
+
+  // Load saved code on mount
+  useEffect(() => {
+    if (userName) {
+      loadSavedCode();
+    }
+  }, [userName, loadSavedCode]);
 
   const saveCode = async () => {
     setSaving(true);
