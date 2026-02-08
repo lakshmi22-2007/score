@@ -3,12 +3,13 @@ export interface Score {
   player_name: string;
   score: number;
   description: string;
-  name?: string;
+  phone_no?: string;
   college?: string;
   html_code?: string;
   css_code?: string;
-  metadata: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface ScoreInput {

@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { User, GraduationCap } from 'lucide-react';
+import { User, GraduationCap, Phone } from 'lucide-react';
 
 interface SignInProps {
-  onSignIn: (name: string, college: string) => void;
+  onSignIn: (name: string, college: string, phone: string) => void;
 }
 
 export function SignIn({ onSignIn }: SignInProps) {
   const [name, setName] = useState('');
   const [college, setCollege] = useState('');
+  const [phone, setPhone] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim() && college.trim()) {
-      onSignIn(name.trim(), college.trim());
+    if (name.trim() && college.trim() && phone.trim()) {
+      onSignIn(name.trim(), college.trim(), phone.trim());
     }
   };
 
@@ -75,6 +76,21 @@ export function SignIn({ onSignIn }: SignInProps) {
               value={college}
               onChange={(e) => setCollege(e.target.value)}
               placeholder="College name"
+              className="w-full px-4 py-3 minecraft-panel bg-gradient-to-br from-amber-700 to-amber-900 text-white font-minecraft text-xs placeholder-amber-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 transition-all"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-minecraft text-white mb-2" style={{ textShadow: '2px 2px 0 rgba(0,0,0,0.7)' }}>
+              <Phone className="inline w-4 h-4 mr-2" />
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Phone number"
               className="w-full px-4 py-3 minecraft-panel bg-gradient-to-br from-amber-700 to-amber-900 text-white font-minecraft text-xs placeholder-amber-300 focus:outline-none focus:ring-4 focus:ring-yellow-400 transition-all"
               required
             />

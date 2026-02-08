@@ -39,10 +39,36 @@ function AppContent() {
     }
   }, []);
 
-  const handleSignIn = (name: string, college: string) => {
-    const userData = { name, college };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const handleSignIn = async (name: string, college: string, phone: string) => {
+    try {
+      // Save to teams table in Supabase
+      const { error } = await supabase
+        .from('teams')
+        .insert([
+          {
+            team_name: name,
+            college_name: college,
+            phone_no: phone
+          }
+        ]);
+
+      if (error) {
+        // If team already exists, that's okay - just continue
+        if (!error.message.includes('duplicate')) {
+          console.error('Error saving team:', error);
+        }
+      }
+
+      const userData = { name, college };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    } catch (error) {
+      console.error('Failed to save team:', error);
+      // Still allow user to proceed even if save fails
+      const userData = { name, college };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
   };
 
   const handleLogout = () => {
